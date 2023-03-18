@@ -98,12 +98,7 @@ class Bullet {
 
     // Check if the bullet has hit an enemy
     Game.enemies.forEach((enemy) => {
-      if (
-        this.x < enemy.x + enemy.width &&
-        this.x + this.width > enemy.x &&
-        this.y < enemy.y + enemy.height &&
-        this.y + this.height > enemy.y
-      ) {
+      if (collision(this, enemy)) {
         Game.enemies = Game.enemies.filter((e) => e !== enemy)
         Game.bullets = Game.bullets.filter((bullet) => bullet !== this)
         Game.score += 10
@@ -161,16 +156,18 @@ function spawnEnemies() {
     generateEnemies(4, { maxSpeed: 5, maxSize: 70 })
   } else if (Game.interval > 15 && Game.interval < 20) {
     generateEnemies(5, { maxSpeed: 6, maxSize: 70 })
-  } else if (Game.interval > 20 && Game.interval < 35) {
+  } else if (Game.interval > 20 && Game.interval < 30) {
     generateEnemies(6, { maxSpeed: 7, maxSize: 80 })
-  } else if (Game.interval > 30 && Game.interval < 45) {
+  } else if (Game.interval > 30 && Game.interval < 40) {
     generateEnemies(7, { maxSpeed: 8, maxSize: 80 })
   } else if (Game.interval > 40 && Game.interval < 50) {
     generateEnemies(8, { maxSpeed: 9, maxSize: 90 })
   } else if (Game.interval > 50 && Game.interval < 60) {
     generateEnemies(9, { maxSpeed: 9, maxSize: 100 })
-  } else if (Game.interval > 60) {
+  } else if (Game.interval > 60 && Game.interval < 80) {
     generateEnemies(10, { maxSpeed: 10, maxSize: 100 })
+  } else if (Game.interval > 80) {
+    generateEnemies(12, { maxSpeed: 12, maxSize: 120 })
   }
 }
 
@@ -202,6 +199,19 @@ function play(sound) {
   shootSound.play()
 }
 
+function collision(obj1, obj2) {
+  if (
+    obj1.x < obj2.x + obj2.width &&
+    obj1.x + obj1.width > obj2.x &&
+    obj1.y < obj2.y + obj2.height &&
+    obj1.y + obj1.height > obj2.y
+  ) {
+    return true
+  } else {
+    return false
+  }
+}
+
 function update() {
   Game.player.update()
 
@@ -210,12 +220,7 @@ function update() {
 
   // Check if the player was hit by any enemy
   Game.enemies.forEach((enemy) => {
-    if (
-      Game.player.x < enemy.x + enemy.width &&
-      Game.player.x + Game.player.width > enemy.x &&
-      Game.player.y < enemy.y + enemy.height &&
-      Game.player.y + Game.player.height > enemy.y
-    ) {
+    if (collision(Game.player, enemy)) {
       Game.gameOver = true
       Game.playerColor = 'red'
     }
@@ -245,13 +250,13 @@ function render() {
     Game.ctx.fillStyle = "white"
     Game.ctx.font = `60px '${Game.font}'`
     Game.ctx.fillText("GAME OVER", 130, 300)
-    Game.ctx.font = `16px '${Game.font}'`
-    Game.ctx.fillText("Press space to restart", 220, 340)
+    Game.ctx.font = `18px '${Game.font}'`
+    Game.ctx.fillText("Press R to restart", 240, 340)
 
     if (Game.score > maxScore) localStorage.setItem("gameScore", Game.score)
 
     document.addEventListener("keyup", (event) => {
-      if (event.key === " ") location.reload()
+      if (event.key === "r") location.reload()
     })
   }
 }
