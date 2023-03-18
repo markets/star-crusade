@@ -46,7 +46,7 @@ class Player {
   render() {
     Game.ctx.fillStyle = Game.playerColor
     Game.ctx.fillRect(this.x, this.y, this.width, this.height)
-    Game.ctx.strokeStyle = "#fafafa"
+    Game.ctx.strokeStyle = "white"
     Game.ctx.lineWidth = 5
     Game.ctx.strokeRect(this.x, this.y, this.width, this.height)
   }
@@ -112,7 +112,7 @@ class Bullet {
   }
 
   render() {
-    Game.ctx.fillStyle = "#fafafa"
+    Game.ctx.fillStyle = "white"
     Game.ctx.fillRect(this.x, this.y, this.width, this.height)
   }
 }
@@ -234,7 +234,7 @@ function render() {
 
   // Render score
   const maxScore = localStorage.getItem("gameScore") || 0
-  Game.ctx.fillStyle = "#fafafa"
+  Game.ctx.fillStyle = "white"
   Game.ctx.font = `20px '${Game.font}'`
   Game.ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 10, 30)
 
@@ -242,7 +242,7 @@ function render() {
   if (Game.gameOver) {
     play('explosion')
 
-    Game.ctx.fillStyle = "#fafafa"
+    Game.ctx.fillStyle = "white"
     Game.ctx.font = `60px '${Game.font}'`
     Game.ctx.fillText("GAME OVER", 130, 300)
     Game.ctx.font = `16px '${Game.font}'`
