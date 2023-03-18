@@ -10,7 +10,7 @@ const Game = {
   backgroundY: 0,
   interval: 0,
   font: 'Press Start 2P',
-  playerColor: 'blue'
+  playerImage: new Image()
 }
 
 class Player {
@@ -44,11 +44,7 @@ class Player {
   }
 
   render() {
-    Game.ctx.fillStyle = Game.playerColor
-    Game.ctx.fillRect(this.x, this.y, this.width, this.height)
-    Game.ctx.strokeStyle = "white"
-    Game.ctx.lineWidth = 5
-    Game.ctx.strokeRect(this.x, this.y, this.width, this.height)
+    Game.ctx.drawImage(Game.playerImage, this.x, this.y, this.width, this.height)
   }
 }
 
@@ -115,10 +111,13 @@ class Bullet {
 function start() {
   Game.canvas = document.getElementById("game")
   Game.ctx = Game.canvas.getContext("2d")
-  Game.player = new Player()
 
-  // Load background image
+  // Load images
   Game.backgroundImage.src = "assets/background.jpeg"
+  Game.playerImage.src = "assets/ship.png"
+
+  // Create player
+  Game.player = new Player()
 
   // Each second, spawn new Enemies
   setInterval(spawnEnemies, 1000)
@@ -222,7 +221,6 @@ function update() {
   Game.enemies.forEach((enemy) => {
     if (collision(Game.player, enemy)) {
       Game.gameOver = true
-      Game.playerColor = 'red'
     }
   })
 }
