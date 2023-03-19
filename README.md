@@ -1,8 +1,8 @@
 # Space Battle 🚀
 
-Space Battle retro game built with HTML & JavaScript, and pair-programmed with ChatGPT 🤖
+Space Battle retro game built with HTML & JavaScript, pair-programmed with ChatGPT 🤖
 
-🌐 [**Live demo**](https://space-battle-js.netlify.app)
+🕹️ [**Play online**](https://space-battle-retro.netlify.app)
 
 ## Run it locally
 

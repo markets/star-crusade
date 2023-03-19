@@ -11,6 +11,12 @@
       font-size: 1.2em;
       text-align: center;
     }
+    a {
+      color: black;
+    }
+    small {
+      font-size: 12px;
+    }
     #canvas-container {
       width: 100%;
     }
@@ -23,10 +29,11 @@
 <body>
   <div id="canvas-container">
     <canvas id="game" width="800" height="600"></canvas>
+    <audio id="shoot" src="assets/laser.wav"></audio>
+    <audio id="explosion" src="assets/explosion.wav"></audio>
   </div>
-  <p>◀️▶️ Arrows 🔫 Space</p>
-  <audio id="shoot" src="assets/laser.wav"></audio>
-  <audio id="explosion" src="assets/explosion.wav"></audio>
+  <p>◀️▶️ ARROWS 🔫 SPACE</p>
+  <small>💾 <a href="https://github.com/markets/space-battle" target="_blank">source code</a></small>
   <script src="game.js"></script>
 </body>
 </html>

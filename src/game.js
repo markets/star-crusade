@@ -18,7 +18,7 @@ class Player {
     this.width = 40
     this.height = 40
     this.x = Game.canvas.width / 2 - this.width / 2
-    this.y = Game.canvas.height - this.height - 20
+    this.y = Game.canvas.height - this.height - 10
     this.speed = 6
     this.isMovingLeft = false
     this.isMovingRight = false
@@ -194,7 +194,7 @@ function randomColor() {
 function play(sound) {
   const shootSound = document.getElementById(sound)
   shootSound.currentTime = 0
-  shootSound.volume = 0.4
+  shootSound.volume = 0.2
   shootSound.play()
 }
 
