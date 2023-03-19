@@ -1,8 +1,12 @@
-# Space Battle 🚀
+# Star Crusade 🚀
 
-Space Battle retro game built with HTML & JavaScript, pair-programmed with ChatGPT 🤖
+> A retro game built with HTML & JavaScript, pair-programmed with ChatGPT 🤖
 
-🕹️ [**Play online**](https://space-battle-retro.netlify.app)
+Welcome to Star Crusade, an epic space adventure that will take you to the furthest reaches of the galaxy. In this game, you'll take on the role of a brave starship captain, leading your crew on a mission to save the galaxy from an ancient evil that threatens to destroy everything in its path.
+
+Are you ready to embark on the journey?
+
+🕹️ [**Play online**](https://star-crusade.netlify.app)
 
 ## Run it locally
 
