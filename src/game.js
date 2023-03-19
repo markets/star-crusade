@@ -6,6 +6,7 @@ const Game = {
   enemies: [],
   bullets: [],
   score: 0,
+  newMaxScore: false,
   gameOver: false,
   backgroundImage: new Image(),
   backgroundY: 0,
@@ -232,6 +233,12 @@ function render() {
   Game.ctx.fillStyle = "white"
   Game.ctx.font = `20px '${Game.font}'`
   Game.ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 10, 30)
+
+  // Notify new record achieved
+  if (Game.score > maxScore && !Game.newMaxScore) {
+    play('achievement')
+    Game.newMaxScore = true
+  }
 
   // GAME OVER
   if (Game.gameOver) {
