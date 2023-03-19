@@ -1,6 +1,7 @@
 const Game = {
   canvas: null,
   ctx: null,
+  sound: true,
   player: null,
   enemies: [],
   bullets: [],
@@ -119,7 +120,7 @@ function start() {
   // Create player
   Game.player = new Player()
 
-  // Each second, spawn new Enemies
+  // Each second, spawn new Enemies increasing difficulty
   setInterval(spawnEnemies, 1000)
 
   document.addEventListener("keydown", (event) => {
@@ -131,6 +132,9 @@ function start() {
 
     if (event.key === " ")
       Game.player.isShooting = true
+
+    if (event.key === "s")
+      Game.sound = !Game.sound
   })
 
   document.addEventListener("keyup", (event) => {
@@ -192,6 +196,8 @@ function randomColor() {
 }
 
 function play(sound) {
+  if (!Game.sound) return
+
   const shootSound = document.getElementById(sound)
   shootSound.currentTime = 0
   shootSound.volume = 0.2
@@ -213,7 +219,6 @@ function collision(obj1, obj2) {
 
 function update() {
   Game.player.update()
-
   Game.enemies.forEach((enemy) => enemy.update())
   Game.bullets.forEach((bullet) => bullet.update())
 
@@ -231,7 +236,6 @@ function render() {
   renderBackground()
 
   Game.player.render()
-
   Game.enemies.forEach((enemy) => enemy.render())
   Game.bullets.forEach((bullet) => bullet.render())
 
@@ -263,7 +267,7 @@ function renderBackground() {
   Game.ctx.drawImage(Game.backgroundImage, 0, Game.backgroundY)
   Game.ctx.drawImage(Game.backgroundImage, 0, Game.backgroundY - Game.canvas.height)
 
-  Game.backgroundY += 0.6
+  Game.backgroundY += 0.5
   if (Game.backgroundY >= Game.canvas.height)
     Game.backgroundY = 0
 }
