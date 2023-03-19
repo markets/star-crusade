@@ -151,27 +151,15 @@ function start() {
 function spawnEnemies() {
   Game.interval++
 
-  if (Game.interval < 5) {
-    generateEnemies(2, { maxSpeed: 3, maxSize: 50 })
-  } else if (Game.interval > 5 && Game.interval < 10) {
-    generateEnemies(3, { maxSpeed: 4, maxSize: 60 })
-  } else if (Game.interval > 10 && Game.interval < 15) {
-    generateEnemies(4, { maxSpeed: 5, maxSize: 70 })
-  } else if (Game.interval > 15 && Game.interval < 20) {
-    generateEnemies(5, { maxSpeed: 6, maxSize: 70 })
-  } else if (Game.interval > 20 && Game.interval < 30) {
-    generateEnemies(6, { maxSpeed: 7, maxSize: 80 })
-  } else if (Game.interval > 30 && Game.interval < 40) {
-    generateEnemies(7, { maxSpeed: 8, maxSize: 80 })
-  } else if (Game.interval > 40 && Game.interval < 50) {
-    generateEnemies(8, { maxSpeed: 9, maxSize: 90 })
-  } else if (Game.interval > 50 && Game.interval < 60) {
-    generateEnemies(9, { maxSpeed: 9, maxSize: 100 })
-  } else if (Game.interval > 60 && Game.interval < 80) {
-    generateEnemies(10, { maxSpeed: 10, maxSize: 100 })
-  } else if (Game.interval > 80) {
-    generateEnemies(12, { maxSpeed: 12, maxSize: 120 })
-  }
+  let maxEnemies = randomInt(2, Math.round(Game.interval / 5))
+  let maxSpeed = maxEnemies + 1
+  let maxSize = (maxSpeed + 10) * 10
+
+  if (maxEnemies > 15) maxEnemies = 15
+  if (maxSpeed > 25) maxSpeed = 25
+  if (maxSize > 150) maxSize = 150
+
+  generateEnemies(maxEnemies, { maxSpeed: maxSpeed, maxSize: maxSize })
 }
 
 function generateEnemies(number, attributes) {
