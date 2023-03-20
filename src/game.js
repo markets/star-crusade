@@ -125,25 +125,17 @@ function start() {
   setInterval(spawnEnemies, 1000)
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowLeft")
-      Game.player.isMovingLeft = true
+    if (event.key === "ArrowLeft") Game.player.isMovingLeft = true
+    if (event.key === "ArrowRight") Game.player.isMovingRight = true
+    if (event.key === " ") Game.player.isShooting = true
+    if (event.key === "s") Game.sound = !Game.sound
 
-    if (event.key === "ArrowRight")
-      Game.player.isMovingRight = true
-
-    if (event.key === " ")
-      Game.player.isShooting = true
-
-    if (event.key === "s")
-      Game.sound = !Game.sound
+    play("soundtrack", 0.25)
   })
 
   document.addEventListener("keyup", (event) => {
-    if (event.key === "ArrowLeft")
-      Game.player.isMovingLeft = false
-
-    if (event.key === "ArrowRight")
-      Game.player.isMovingRight = false
+    if (event.key === "ArrowLeft") Game.player.isMovingLeft = false
+    if (event.key === "ArrowRight") Game.player.isMovingRight = false
   })
 
   gameLoop()
@@ -184,13 +176,13 @@ function randomColor() {
   return `#${Math.floor(Math.random()*16777215).toString(16)}`
 }
 
-function play(sound) {
-  if (!Game.sound) return
+function play(sound, volume = 0.2) {
+  const audio = document.getElementById(sound)
 
-  const shootSound = document.getElementById(sound)
-  shootSound.currentTime = 0
-  shootSound.volume = 0.2
-  shootSound.play()
+  audio.volume = Game.sound ? volume : 0
+  if (!audio.loop) audio.currentTime = 0
+
+  audio.play()
 }
 
 function collision(obj1, obj2) {
