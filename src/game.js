@@ -130,6 +130,9 @@ function start() {
     if (event.key === " ") Game.player.isShooting = true
     if (event.key === "s") Game.sound = !Game.sound
 
+    // Prevent scroll when pressing the spacebar
+    if (event.key === " " && event.target == document.body) event.preventDefault()
+
     play("soundtrack", 0.25)
   })
 
@@ -239,8 +242,8 @@ function render() {
     Game.ctx.fillStyle = "white"
     Game.ctx.font = `60px '${Game.font}'`
     Game.ctx.fillText("GAME OVER", 130, 300)
-    Game.ctx.font = `18px '${Game.font}'`
-    Game.ctx.fillText("Press R to restart", 240, 340)
+    Game.ctx.font = `20px '${Game.font}'`
+    Game.ctx.fillText("Press R to restart", 220, 340)
 
     if (Game.score > maxScore) localStorage.setItem("gameScore", Game.score)
 
@@ -263,9 +266,7 @@ function gameLoop() {
   update()
   render()
 
-  if (!Game.gameOver) {
-    requestAnimationFrame(gameLoop)
-  }
+  if (!Game.gameOver) requestAnimationFrame(gameLoop)
 }
 
 start()
