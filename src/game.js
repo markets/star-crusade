@@ -111,29 +111,19 @@ class Bullet {
 }
 
 // Audio management functions
-function tryAutoStartAudio() {
-  // Try to play audio immediately (will fail in most modern browsers but worth trying)
-  const soundtrack = document.getElementById('soundtrack')
-  soundtrack.volume = 0.25
-  soundtrack.play().catch(() => {
-    // Auto-play blocked, will need user interaction
-    console.log('Auto-play blocked, waiting for user interaction')
-  })
-}
-
-function ensureAudioContext() {
-  // Ensure audio context is active on user interaction
-  const soundtrack = document.getElementById('soundtrack')
-  if (soundtrack.paused && Game.sound) {
-    soundtrack.play().catch(() => {
-      // Still blocked, but we tried
-    })
-  }
-}
 
 function updateSoundButtonText() {
   const soundBtn = document.getElementById('sound-btn')
-  soundBtn.textContent = Game.sound ? '🔈 ON' : '🔇 OFF'
+  const icon = soundBtn.querySelector('.icon')
+  const text = soundBtn.querySelector('.text')
+  
+  if (Game.sound) {
+    icon.textContent = '🔈'
+    text.textContent = ' ON'
+  } else {
+    icon.textContent = '🔇'
+    text.textContent = ' OFF'
+  }
 }
 
 function start() {
@@ -151,9 +141,6 @@ function start() {
   // Create player AFTER canvas is resized
   Game.player = new Player()
 
-  // Try to auto-start audio (modern browsers require user interaction)
-  tryAutoStartAudio()
-
   // Each second, spawn new Enemies increasing difficulty
   setInterval(spawnEnemies, 1000)
 
@@ -167,7 +154,6 @@ function start() {
     if (event.key === " " && event.target == document.body) event.preventDefault()
 
     // Start audio on first user interaction
-    ensureAudioContext()
     play("soundtrack", 0.25)
   })
 
@@ -304,13 +290,11 @@ function setupMobileControls() {
   shootBtn.addEventListener('touchstart', (e) => {
     preventDefaults(e)
     Game.player.isShooting = true
-    ensureAudioContext()
     play("soundtrack", 0.25)
   })
   shootBtn.addEventListener('click', (e) => {
     preventDefaults(e)
     Game.player.isShooting = true
-    ensureAudioContext()
     play("soundtrack", 0.25)
   })
 
@@ -318,13 +302,11 @@ function setupMobileControls() {
   soundBtn.addEventListener('touchstart', (e) => {
     preventDefaults(e)
     Game.sound = !Game.sound
-    ensureAudioContext()
     updateSoundButtonText()
   })
   soundBtn.addEventListener('click', (e) => {
     preventDefaults(e)
     Game.sound = !Game.sound
-    ensureAudioContext()
     updateSoundButtonText()
   })
 }

@@ -78,6 +78,17 @@ canvas {
   padding: 20px 30px;
 }
 
+/* Desktop styling - show both icon and text */
+@media (min-width: 769px) {
+  .control-button .text {
+    display: inline;
+  }
+  
+  .control-button .icon {
+    display: inline;
+  }
+}
+
 /* Show mobile controls on touch devices and small screens */
 @media (pointer: coarse), (max-width: 768px) {
   #mobile-controls {
@@ -90,6 +101,41 @@ canvas {
   
   #controls-text {
     display: none;
+  }
+  
+  /* Mobile-specific button styling: remove borders, text, and make icons bigger */
+  .control-button {
+    background-color: rgba(255, 255, 255, 0.3);
+    border: none;
+    border-radius: 15px;
+    color: white;
+    font-size: 28px;
+    padding: 25px;
+    min-width: 70px;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .control-button:active {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .shoot-button {
+    font-size: 32px;
+    padding: 30px;
+    min-width: 80px;
+    min-height: 80px;
+  }
+  
+  /* Hide text on mobile, show only icons */
+  .control-button .text {
+    display: none;
+  }
+  
+  .control-button .icon {
+    display: inline;
   }
 }
 
