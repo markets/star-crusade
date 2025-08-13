@@ -369,8 +369,9 @@ function render() {
 }
 
 function renderBackground() {
-  Game.ctx.drawImage(Game.backgroundImage, 0, Game.backgroundY)
-  Game.ctx.drawImage(Game.backgroundImage, 0, Game.backgroundY - Game.canvas.height)
+  // Scale background to fit canvas dimensions
+  Game.ctx.drawImage(Game.backgroundImage, 0, Game.backgroundY, Game.canvas.width, Game.canvas.height)
+  Game.ctx.drawImage(Game.backgroundImage, 0, Game.backgroundY - Game.canvas.height, Game.canvas.width, Game.canvas.height)
 
   Game.backgroundY += 0.5
   if (Game.backgroundY >= Game.canvas.height)
