@@ -110,6 +110,32 @@ class Bullet {
   }
 }
 
+// Audio management functions
+function tryAutoStartAudio() {
+  // Try to play audio immediately (will fail in most modern browsers but worth trying)
+  const soundtrack = document.getElementById('soundtrack')
+  soundtrack.volume = 0.25
+  soundtrack.play().catch(() => {
+    // Auto-play blocked, will need user interaction
+    console.log('Auto-play blocked, waiting for user interaction')
+  })
+}
+
+function ensureAudioContext() {
+  // Ensure audio context is active on user interaction
+  const soundtrack = document.getElementById('soundtrack')
+  if (soundtrack.paused && Game.sound) {
+    soundtrack.play().catch(() => {
+      // Still blocked, but we tried
+    })
+  }
+}
+
+function updateSoundButtonText() {
+  const soundBtn = document.getElementById('sound-btn')
+  soundBtn.textContent = Game.sound ? '🔈 ON' : '🔇 OFF'
+}
+
 function start() {
   Game.canvas = document.getElementById("game")
   Game.ctx = Game.canvas.getContext("2d")
@@ -125,6 +151,9 @@ function start() {
   // Create player AFTER canvas is resized
   Game.player = new Player()
 
+  // Try to auto-start audio (modern browsers require user interaction)
+  tryAutoStartAudio()
+
   // Each second, spawn new Enemies increasing difficulty
   setInterval(spawnEnemies, 1000)
 
@@ -137,6 +166,8 @@ function start() {
     // Prevent scroll when pressing the spacebar
     if (event.key === " " && event.target == document.body) event.preventDefault()
 
+    // Start audio on first user interaction
+    ensureAudioContext()
     play("soundtrack", 0.25)
   })
 
@@ -147,6 +178,9 @@ function start() {
 
   // Mobile controls
   setupMobileControls()
+  
+  // Initialize sound button text
+  updateSoundButtonText()
 
   gameLoop()
 }
@@ -154,25 +188,53 @@ function start() {
 function resizeCanvas() {
   const canvas = Game.canvas
   const container = canvas.parentElement
-  const rect = container.getBoundingClientRect()
   
-  // Set a reasonable max size while keeping aspect ratio
-  const maxWidth = Math.min(window.innerWidth * 0.95, 1400)
-  const maxHeight = Math.min(window.innerHeight * 0.7, 900)
+  // Check if we're on mobile
+  const isMobile = window.innerWidth <= 768
   
-  // Maintain aspect ratio (roughly 1.56:1)
-  const aspectRatio = 1400 / 900
-  
-  let newWidth = maxWidth
-  let newHeight = newWidth / aspectRatio
-  
-  if (newHeight > maxHeight) {
-    newHeight = maxHeight
-    newWidth = newHeight * aspectRatio
+  if (isMobile) {
+    // On mobile, use more vertical space
+    const maxWidth = window.innerWidth * 0.95
+    const maxHeight = window.innerHeight * 0.85
+    
+    // Maintain aspect ratio but prioritize using available space
+    const aspectRatio = 1400 / 900
+    
+    let newWidth = maxWidth
+    let newHeight = newWidth / aspectRatio
+    
+    // If height is too small, prioritize height and adjust width
+    if (newHeight < maxHeight * 0.8) {
+      newHeight = Math.min(maxHeight, window.innerHeight * 0.85)
+      newWidth = newHeight * aspectRatio
+      
+      // Ensure width doesn't exceed screen
+      if (newWidth > maxWidth) {
+        newWidth = maxWidth
+        newHeight = newWidth / aspectRatio
+      }
+    }
+    
+    canvas.style.width = newWidth + 'px'
+    canvas.style.height = newHeight + 'px'
+  } else {
+    // Desktop sizing
+    const maxWidth = Math.min(window.innerWidth * 0.95, 1400)
+    const maxHeight = Math.min(window.innerHeight * 0.7, 900)
+    
+    const aspectRatio = 1400 / 900
+    
+    let newWidth = maxWidth
+    let newHeight = newWidth / aspectRatio
+    
+    if (newHeight > maxHeight) {
+      newHeight = maxHeight
+      newWidth = newHeight * aspectRatio
+    }
+    
+    canvas.style.width = newWidth + 'px'
+    canvas.style.height = newHeight + 'px'
   }
-  
-  canvas.style.width = newWidth + 'px'
-  canvas.style.height = newHeight + 'px'
 }
 
 function setupMobileControls() {
@@ -227,11 +289,13 @@ function setupMobileControls() {
   shootBtn.addEventListener('touchstart', (e) => {
     preventDefaults(e)
     Game.player.isShooting = true
+    ensureAudioContext()
     play("soundtrack", 0.25)
   })
   shootBtn.addEventListener('click', (e) => {
     preventDefaults(e)
     Game.player.isShooting = true
+    ensureAudioContext()
     play("soundtrack", 0.25)
   })
 
@@ -239,10 +303,14 @@ function setupMobileControls() {
   soundBtn.addEventListener('touchstart', (e) => {
     preventDefaults(e)
     Game.sound = !Game.sound
+    ensureAudioContext()
+    updateSoundButtonText()
   })
   soundBtn.addEventListener('click', (e) => {
     preventDefaults(e)
     Game.sound = !Game.sound
+    ensureAudioContext()
+    updateSoundButtonText()
   })
 }
 
