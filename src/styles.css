@@ -101,9 +101,8 @@ canvas {
   }
   
   canvas {
-    width: 95vw;
+    /* Let JavaScript handle the sizing to maintain aspect ratio */
     max-width: 95vw;
-    height: 92vh; /* Use almost full screen height on mobile */
     max-height: 92vh;
   }
   

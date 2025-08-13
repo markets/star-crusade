@@ -192,28 +192,45 @@ function resizeCanvas() {
   // Check if we're on mobile
   const isMobile = window.innerWidth <= 768
   
+  const originalAspectRatio = 1400 / 900 // 1.556
+  
   if (isMobile) {
-    // On mobile, prioritize using almost full screen height with relaxed aspect ratio
+    // On mobile, maximize screen usage while maintaining aspect ratio
     const maxWidth = window.innerWidth * 0.95
-    const maxHeight = window.innerHeight * 0.92
+    const maxHeight = window.innerHeight * 0.75  // Leave space for controls but use more height
     
-    // Use maximum available space, allowing aspect ratio to adjust on mobile
-    let newHeight = maxHeight
-    let newWidth = maxWidth
+    // Try both width-constrained and height-constrained approaches
+    // and use whichever gives the larger canvas
+    const widthConstrainedWidth = maxWidth
+    const widthConstrainedHeight = maxWidth / originalAspectRatio
     
-    // Only constrain if the aspect ratio becomes extremely unusual
-    const currentAspectRatio = newWidth / newHeight
-    const originalAspectRatio = 1400 / 900 // 1.556
+    const heightConstrainedHeight = maxHeight
+    const heightConstrainedWidth = maxHeight * originalAspectRatio
     
-    // If the screen is MUCH wider than our target ratio (very wide tablets), constrain the width
-    if (currentAspectRatio > originalAspectRatio * 2.0) {
-      newWidth = newHeight * originalAspectRatio
+    let newWidth, newHeight
+    
+    // Choose the approach that gives us the larger canvas (by area)
+    if (widthConstrainedWidth * widthConstrainedHeight > heightConstrainedWidth * heightConstrainedHeight) {
+      // Width-constrained gives larger area, but check if it fits in height
+      if (widthConstrainedHeight <= maxHeight) {
+        newWidth = widthConstrainedWidth
+        newHeight = widthConstrainedHeight
+      } else {
+        // Doesn't fit, use height-constrained
+        newWidth = heightConstrainedWidth
+        newHeight = heightConstrainedHeight
+      }
+    } else {
+      // Height-constrained gives larger area, but check if it fits in width
+      if (heightConstrainedWidth <= maxWidth) {
+        newWidth = heightConstrainedWidth
+        newHeight = heightConstrainedHeight
+      } else {
+        // Doesn't fit, use width-constrained
+        newWidth = widthConstrainedWidth
+        newHeight = widthConstrainedHeight
+      }
     }
-    // If the screen is MUCH taller than our target ratio (very tall narrow phones), constrain the height
-    else if (currentAspectRatio < originalAspectRatio * 0.3) {
-      newHeight = newWidth / originalAspectRatio
-    }
-    // For normal mobile screens (like iPhone), allow the flexible aspect ratio
     
     canvas.style.width = newWidth + 'px'
     canvas.style.height = newHeight + 'px'
@@ -222,14 +239,12 @@ function resizeCanvas() {
     const maxWidth = Math.min(window.innerWidth * 0.95, 1400)
     const maxHeight = Math.min(window.innerHeight * 0.7, 900)
     
-    const aspectRatio = 1400 / 900
-    
     let newWidth = maxWidth
-    let newHeight = newWidth / aspectRatio
+    let newHeight = newWidth / originalAspectRatio
     
     if (newHeight > maxHeight) {
       newHeight = maxHeight
-      newWidth = newHeight * aspectRatio
+      newWidth = newHeight * originalAspectRatio
     }
     
     canvas.style.width = newWidth + 'px'
