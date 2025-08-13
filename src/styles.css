@@ -37,8 +37,8 @@ canvas {
   align-items: flex-end;
   width: 100%;
   max-width: 1400px;
-  margin: 20px auto 0;
-  padding: 0 20px;
+  margin: 10px auto 0;
+  padding: 0 15px;
   position: relative;
 }
 
@@ -96,19 +96,19 @@ canvas {
 /* Responsive canvas sizing */
 @media (max-width: 768px) {
   body {
-    padding: 0.5em;
+    padding: 0.2em;
     font-size: 1em;
   }
   
   canvas {
     width: 95vw;
     max-width: 95vw;
-    height: 85vh; /* Use more vertical space on mobile */
-    max-height: 85vh;
+    height: 92vh; /* Use almost full screen height on mobile */
+    max-height: 92vh;
   }
   
   #canvas-container {
-    margin-top: 10px;
+    margin-top: 5px;
   }
 }
 

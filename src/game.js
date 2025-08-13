@@ -193,27 +193,27 @@ function resizeCanvas() {
   const isMobile = window.innerWidth <= 768
   
   if (isMobile) {
-    // On mobile, use more vertical space
+    // On mobile, prioritize using almost full screen height with relaxed aspect ratio
     const maxWidth = window.innerWidth * 0.95
-    const maxHeight = window.innerHeight * 0.85
+    const maxHeight = window.innerHeight * 0.92
     
-    // Maintain aspect ratio but prioritize using available space
-    const aspectRatio = 1400 / 900
-    
+    // Use maximum available space, allowing aspect ratio to adjust on mobile
+    let newHeight = maxHeight
     let newWidth = maxWidth
-    let newHeight = newWidth / aspectRatio
     
-    // If height is too small, prioritize height and adjust width
-    if (newHeight < maxHeight * 0.8) {
-      newHeight = Math.min(maxHeight, window.innerHeight * 0.85)
-      newWidth = newHeight * aspectRatio
-      
-      // Ensure width doesn't exceed screen
-      if (newWidth > maxWidth) {
-        newWidth = maxWidth
-        newHeight = newWidth / aspectRatio
-      }
+    // Only constrain if the aspect ratio becomes extremely unusual
+    const currentAspectRatio = newWidth / newHeight
+    const originalAspectRatio = 1400 / 900 // 1.556
+    
+    // If the screen is MUCH wider than our target ratio (very wide tablets), constrain the width
+    if (currentAspectRatio > originalAspectRatio * 2.0) {
+      newWidth = newHeight * originalAspectRatio
     }
+    // If the screen is MUCH taller than our target ratio (very tall narrow phones), constrain the height
+    else if (currentAspectRatio < originalAspectRatio * 0.3) {
+      newHeight = newWidth / originalAspectRatio
+    }
+    // For normal mobile screens (like iPhone), allow the flexible aspect ratio
     
     canvas.style.width = newWidth + 'px'
     canvas.style.height = newHeight + 'px'
