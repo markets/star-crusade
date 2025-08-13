@@ -114,11 +114,15 @@ function start() {
   Game.canvas = document.getElementById("game")
   Game.ctx = Game.canvas.getContext("2d")
 
+  // Make canvas responsive
+  resizeCanvas()
+  window.addEventListener('resize', resizeCanvas)
+
   // Load images
   Game.backgroundImage.src = "assets/background.jpeg"
   Game.playerImage.src = "assets/ship.png"
 
-  // Create player
+  // Create player AFTER canvas is resized
   Game.player = new Player()
 
   // Each second, spawn new Enemies increasing difficulty
@@ -141,7 +145,105 @@ function start() {
     if (event.key === "ArrowRight") Game.player.isMovingRight = false
   })
 
+  // Mobile controls
+  setupMobileControls()
+
   gameLoop()
+}
+
+function resizeCanvas() {
+  const canvas = Game.canvas
+  const container = canvas.parentElement
+  const rect = container.getBoundingClientRect()
+  
+  // Set a reasonable max size while keeping aspect ratio
+  const maxWidth = Math.min(window.innerWidth * 0.95, 1400)
+  const maxHeight = Math.min(window.innerHeight * 0.7, 900)
+  
+  // Maintain aspect ratio (roughly 1.56:1)
+  const aspectRatio = 1400 / 900
+  
+  let newWidth = maxWidth
+  let newHeight = newWidth / aspectRatio
+  
+  if (newHeight > maxHeight) {
+    newHeight = maxHeight
+    newWidth = newHeight * aspectRatio
+  }
+  
+  canvas.style.width = newWidth + 'px'
+  canvas.style.height = newHeight + 'px'
+}
+
+function setupMobileControls() {
+  const leftBtn = document.getElementById('left-btn')
+  const rightBtn = document.getElementById('right-btn')
+  const shootBtn = document.getElementById('shoot-btn')
+  const soundBtn = document.getElementById('sound-btn')
+
+  // Prevent default touch behaviors
+  const preventDefaults = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  // Left button
+  leftBtn.addEventListener('touchstart', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingLeft = true
+  })
+  leftBtn.addEventListener('touchend', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingLeft = false
+  })
+  leftBtn.addEventListener('mousedown', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingLeft = true
+  })
+  leftBtn.addEventListener('mouseup', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingLeft = false
+  })
+
+  // Right button
+  rightBtn.addEventListener('touchstart', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingRight = true
+  })
+  rightBtn.addEventListener('touchend', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingRight = false
+  })
+  rightBtn.addEventListener('mousedown', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingRight = true
+  })
+  rightBtn.addEventListener('mouseup', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingRight = false
+  })
+
+  // Shoot button
+  shootBtn.addEventListener('touchstart', (e) => {
+    preventDefaults(e)
+    Game.player.isShooting = true
+    play("soundtrack", 0.25)
+  })
+  shootBtn.addEventListener('click', (e) => {
+    preventDefaults(e)
+    Game.player.isShooting = true
+    play("soundtrack", 0.25)
+  })
+
+  // Sound button
+  soundBtn.addEventListener('touchstart', (e) => {
+    preventDefaults(e)
+    Game.sound = !Game.sound
+  })
+  soundBtn.addEventListener('click', (e) => {
+    preventDefaults(e)
+    Game.sound = !Game.sound
+  })
 }
 
 function spawnEnemies() {
@@ -241,9 +343,22 @@ function render() {
 
     Game.ctx.fillStyle = "white"
     Game.ctx.font = `60px '${Game.font}'`
-    Game.ctx.fillText("GAME OVER", 130, 300)
+    
+    // Center the "GAME OVER" text automatically
+    const gameOverText = "GAME OVER"
+    const gameOverMetrics = Game.ctx.measureText(gameOverText)
+    const gameOverX = (Game.canvas.width - gameOverMetrics.width) / 2
+    const gameOverY = Game.canvas.height / 2 - 20
+    
+    Game.ctx.fillText(gameOverText, gameOverX, gameOverY)
+    
     Game.ctx.font = `20px '${Game.font}'`
-    Game.ctx.fillText("Press R to restart", 220, 340)
+    const restartText = "Press R to restart"
+    const restartMetrics = Game.ctx.measureText(restartText)
+    const restartX = (Game.canvas.width - restartMetrics.width) / 2
+    const restartY = gameOverY + 60
+    
+    Game.ctx.fillText(restartText, restartX, restartY)
 
     if (Game.score > maxScore) localStorage.setItem("gameScore", Game.score)
 

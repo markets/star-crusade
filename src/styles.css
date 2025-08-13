@@ -1,0 +1,90 @@
+body {
+  background-color: #e2e8f0;
+  padding: 1em;
+  font-family: 'Press Start 2P';
+  font-size: 1.2em;
+  text-align: center;
+  margin: 0;
+}
+
+a {
+  color: black;
+}
+
+small {
+  font-size: 12px;
+}
+
+#canvas-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+canvas {
+  display: block;
+  border-radius: 10px;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Mobile controls */
+#mobile-controls {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.control-button {
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 2px solid white;
+  border-radius: 10px;
+  color: white;
+  font-family: 'Press Start 2P';
+  font-size: 16px;
+  padding: 15px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.control-button:active {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.movement-controls {
+  display: flex;
+  gap: 10px;
+}
+
+/* Show mobile controls on touch devices */
+@media (pointer: coarse) {
+  #mobile-controls {
+    display: flex;
+  }
+}
+
+/* Responsive canvas sizing */
+@media (max-width: 768px) {
+  body {
+    padding: 0.5em;
+    font-size: 1em;
+  }
+  
+  canvas {
+    width: 95vw;
+    max-width: 95vw;
+  }
+}
+
+@media (min-width: 769px) {
+  canvas {
+    width: 90vw;
+    max-width: 1400px;
+  }
+}
