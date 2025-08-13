@@ -369,11 +369,11 @@ function render() {
 }
 
 function renderBackground() {
-  // Scale background to fit canvas dimensions
-  Game.ctx.drawImage(Game.backgroundImage, 0, Game.backgroundY, Game.canvas.width, Game.canvas.height)
-  Game.ctx.drawImage(Game.backgroundImage, 0, Game.backgroundY - Game.canvas.height, Game.canvas.width, Game.canvas.height)
+  // Scale background to fit canvas dimensions with slight overlap to prevent white lines
+  Game.ctx.drawImage(Game.backgroundImage, 0, Math.floor(Game.backgroundY), Game.canvas.width, Game.canvas.height + 1)
+  Game.ctx.drawImage(Game.backgroundImage, 0, Math.floor(Game.backgroundY - Game.canvas.height), Game.canvas.width, Game.canvas.height + 1)
 
-  Game.backgroundY += 0.5
+  Game.backgroundY += 1
   if (Game.backgroundY >= Game.canvas.height)
     Game.backgroundY = 0
 }
