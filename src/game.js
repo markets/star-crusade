@@ -113,16 +113,17 @@ class Bullet {
 // Audio management functions
 
 function updateSoundButtonText() {
+  const bottomControls = document.getElementById('bottom-controls')
   const soundBtn = document.getElementById('sound-btn')
-  const icon = soundBtn.querySelector('.icon')
-  const text = soundBtn.querySelector('.text')
   
   if (Game.sound) {
-    icon.textContent = '🔈'
-    text.textContent = ' ON'
+    // Update the icon before the sound button
+    bottomControls.childNodes[0].textContent = '🔈 '
+    soundBtn.textContent = 'Sound'
   } else {
-    icon.textContent = '🔇'
-    text.textContent = ' OFF'
+    // Update the icon before the sound button  
+    bottomControls.childNodes[0].textContent = '🔇 '
+    soundBtn.textContent = 'Sound OFF'
   }
 }
 
