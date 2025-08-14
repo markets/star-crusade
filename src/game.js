@@ -112,16 +112,13 @@ class Bullet {
 
 // Audio management functions
 
-function updateSoundButtonText() {
+function updateSoundButton() {
   const bottomControls = document.getElementById('bottom-controls')
-  const soundBtn = document.getElementById('sound-btn')
   
   if (Game.sound) {
-    // Update both icon and text
     bottomControls.innerHTML = '🔈 <a href="#" id="sound-btn">Sound</a> 🔄 <a href="#" id="restart-btn">Restart</a>'
   } else {
-    // Update both icon and text for sound off
-    bottomControls.innerHTML = '🔇 <a href="#" id="sound-btn">Sound OFF</a> 🔄 <a href="#" id="restart-btn">Restart</a>'
+    bottomControls.innerHTML = '🔇 <a href="#" id="sound-btn">Sound</a> 🔄 <a href="#" id="restart-btn">Restart</a>'
   }
   
   // Re-attach event listeners since we replaced the innerHTML
@@ -150,7 +147,10 @@ function start() {
     if (event.key === "ArrowLeft") Game.player.isMovingLeft = true
     if (event.key === "ArrowRight") Game.player.isMovingRight = true
     if (event.key === " ") Game.player.isShooting = true
-    if (event.key === "s") Game.sound = !Game.sound
+    if (event.key === "s") {
+      Game.sound = !Game.sound
+      updateSoundButton()
+    }
 
     // Prevent scroll when pressing the spacebar
     if (event.key === " " && event.target == document.body) event.preventDefault()
@@ -170,8 +170,8 @@ function start() {
   // Bottom controls (sound/restart buttons)
   setupBottomControlsListeners()
   
-  // Initialize sound button text
-  updateSoundButtonText()
+  // Initialize sound button
+  updateSoundButton()
 
   gameLoop()
 }
@@ -257,12 +257,12 @@ function setupBottomControlsListeners() {
   soundBtn.addEventListener('touchstart', (e) => {
     preventDefaults(e)
     Game.sound = !Game.sound
-    updateSoundButtonText()
+    updateSoundButton()
   })
   soundBtn.addEventListener('click', (e) => {
     preventDefaults(e)
     Game.sound = !Game.sound
-    updateSoundButtonText()
+    updateSoundButton()
   })
 
   // Restart button
