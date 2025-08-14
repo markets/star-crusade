@@ -117,14 +117,15 @@ function updateSoundButtonText() {
   const soundBtn = document.getElementById('sound-btn')
   
   if (Game.sound) {
-    // Update the icon before the sound button
-    bottomControls.childNodes[0].textContent = '🔈 '
-    soundBtn.textContent = 'Sound'
+    // Update both icon and text
+    bottomControls.innerHTML = '🔈 <a href="#" id="sound-btn">Sound</a> 🔄 <a href="#" id="restart-btn">Restart</a>'
   } else {
-    // Update the icon before the sound button  
-    bottomControls.childNodes[0].textContent = '🔇 '
-    soundBtn.textContent = 'Sound OFF'
+    // Update both icon and text for sound off
+    bottomControls.innerHTML = '🔇 <a href="#" id="sound-btn">Sound OFF</a> 🔄 <a href="#" id="restart-btn">Restart</a>'
   }
+  
+  // Re-attach event listeners since we replaced the innerHTML
+  setupBottomControlsListeners()
 }
 
 function start() {
@@ -165,6 +166,9 @@ function start() {
 
   // Mobile controls
   setupMobileControls()
+  
+  // Bottom controls (sound/restart buttons)
+  setupBottomControlsListeners()
   
   // Initialize sound button text
   updateSoundButtonText()
@@ -239,12 +243,43 @@ function resizeCanvas() {
   }
 }
 
+function setupBottomControlsListeners() {
+  const soundBtn = document.getElementById('sound-btn')
+  const restartBtn = document.getElementById('restart-btn')
+  
+  // Prevent default touch behaviors
+  const preventDefaults = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+  
+  // Sound button
+  soundBtn.addEventListener('touchstart', (e) => {
+    preventDefaults(e)
+    Game.sound = !Game.sound
+    updateSoundButtonText()
+  })
+  soundBtn.addEventListener('click', (e) => {
+    preventDefaults(e)
+    Game.sound = !Game.sound
+    updateSoundButtonText()
+  })
+
+  // Restart button
+  restartBtn.addEventListener('touchstart', (e) => {
+    preventDefaults(e)
+    location.reload()
+  })
+  restartBtn.addEventListener('click', (e) => {
+    preventDefaults(e)
+    location.reload()
+  })
+}
+
 function setupMobileControls() {
   const leftBtn = document.getElementById('left-btn')
   const rightBtn = document.getElementById('right-btn')
   const shootBtn = document.getElementById('shoot-btn')
-  const soundBtn = document.getElementById('sound-btn')
-  const restartBtn = document.getElementById('restart-btn')
 
   // Prevent default touch behaviors
   const preventDefaults = (e) => {
@@ -300,27 +335,6 @@ function setupMobileControls() {
     play("soundtrack", 0.25)
   })
 
-  // Sound button
-  soundBtn.addEventListener('touchstart', (e) => {
-    preventDefaults(e)
-    Game.sound = !Game.sound
-    updateSoundButtonText()
-  })
-  soundBtn.addEventListener('click', (e) => {
-    preventDefaults(e)
-    Game.sound = !Game.sound
-    updateSoundButtonText()
-  })
-
-  // Restart button
-  restartBtn.addEventListener('touchstart', (e) => {
-    preventDefaults(e)
-    location.reload()
-  })
-  restartBtn.addEventListener('click', (e) => {
-    preventDefaults(e)
-    location.reload()
-  })
 }
 
 function spawnEnemies() {

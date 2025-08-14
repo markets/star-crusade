@@ -56,13 +56,6 @@ canvas {
   margin-top: 10px;
 }
 
-/* Game controls (sound and restart buttons) */
-#game-controls {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
 .control-button {
   background-color: rgba(255, 255, 255, 0.2);
   border: 2px solid white;
@@ -90,17 +83,13 @@ canvas {
   padding: 20px 30px;
 }
 
-/* Desktop styling - show both icon and text */
+/* Desktop styling */
 @media (min-width: 769px) {
-  .control-button .text {
-    display: inline;
-  }
-  
-  .control-button .icon {
-    display: inline;
+  canvas {
+    width: 90vw;
+    max-width: 1400px;
   }
 }
-
 /* Show mobile controls on touch devices and small screens */
 @media (pointer: coarse), (max-width: 768px) {
   #mobile-controls {
@@ -111,7 +100,7 @@ canvas {
     display: none;
   }
   
-  /* Mobile-specific button styling: remove borders, text, and make icons bigger */
+  /* Mobile-specific button styling: remove borders and make icons bigger */
   .control-button {
     background-color: rgba(255, 255, 255, 0.3);
     border: none;
@@ -137,27 +126,9 @@ canvas {
     min-height: 80px;
   }
   
-  /* Hide text on mobile, show only icons */
-  .control-button .text {
-    display: none;
-  }
-  
-  .control-button .icon {
-    display: inline;
-  }
-  
   /* Style bottom controls for mobile */
   #bottom-controls {
     gap: 15px;
-  }
-  
-  #game-controls .control-button {
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    font-size: 20px;
-    padding: 15px;
-    min-width: 60px;
-    min-height: 60px;
   }
 }
 
