@@ -243,6 +243,7 @@ function setupMobileControls() {
   const rightBtn = document.getElementById('right-btn')
   const shootBtn = document.getElementById('shoot-btn')
   const soundBtn = document.getElementById('sound-btn')
+  const restartBtn = document.getElementById('restart-btn')
 
   // Prevent default touch behaviors
   const preventDefaults = (e) => {
@@ -308,6 +309,16 @@ function setupMobileControls() {
     preventDefaults(e)
     Game.sound = !Game.sound
     updateSoundButtonText()
+  })
+
+  // Restart button
+  restartBtn.addEventListener('touchstart', (e) => {
+    preventDefaults(e)
+    location.reload()
+  })
+  restartBtn.addEventListener('click', (e) => {
+    preventDefaults(e)
+    location.reload()
   })
 }
 

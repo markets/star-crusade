@@ -5,6 +5,7 @@ body {
   font-size: 1.2em;
   text-align: center;
   margin: 0;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 a {
@@ -40,15 +41,23 @@ canvas {
   margin: 10px auto 0;
   padding: 0 15px;
   position: relative;
+  box-sizing: border-box; /* Prevent overflow */
 }
 
-/* Sound control positioned at top-right */
-#sound-control {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-  display: none;
+/* Bottom controls container */
+#bottom-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Game controls (sound and restart buttons) */
+#game-controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
 }
 
 .control-button {
@@ -95,10 +104,6 @@ canvas {
     display: flex;
   }
   
-  #sound-control {
-    display: block;
-  }
-  
   #controls-text {
     display: none;
   }
@@ -136,6 +141,20 @@ canvas {
   
   .control-button .icon {
     display: inline;
+  }
+  
+  /* Style bottom controls for mobile */
+  #bottom-controls {
+    gap: 15px;
+  }
+  
+  #game-controls .control-button {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 20px;
+    padding: 15px;
+    min-width: 60px;
+    min-height: 60px;
   }
 }
 
