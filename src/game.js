@@ -110,8 +110,6 @@ class Bullet {
   }
 }
 
-// Audio management functions
-
 function updateSoundButton() {
   const soundBtn = document.getElementById('sound-btn')
   const iconSpan = soundBtn.querySelector('.icon')
@@ -458,7 +456,6 @@ function render() {
 }
 
 function renderBackground() {
-  // Scale background to fit canvas dimensions with slight overlap to prevent white lines
   Game.ctx.drawImage(Game.backgroundImage, 0, Math.floor(Game.backgroundY), Game.canvas.width, Game.canvas.height + 1)
   Game.ctx.drawImage(Game.backgroundImage, 0, Math.floor(Game.backgroundY - Game.canvas.height), Game.canvas.width, Game.canvas.height + 1)
 
