@@ -424,14 +424,12 @@ function render() {
     play('explosion')
 
     Game.ctx.fillStyle = "white"
+
     Game.ctx.font = `60px '${Game.font}'`
-    
-    // Center the "GAME OVER" text automatically
     const gameOverText = "GAME OVER"
     const gameOverMetrics = Game.ctx.measureText(gameOverText)
     const gameOverX = (Game.canvas.width - gameOverMetrics.width) / 2
     const gameOverY = Game.canvas.height / 2 - 20
-    
     Game.ctx.fillText(gameOverText, gameOverX, gameOverY)
     
     Game.ctx.font = `20px '${Game.font}'`
@@ -439,7 +437,6 @@ function render() {
     const restartMetrics = Game.ctx.measureText(restartText)
     const restartX = (Game.canvas.width - restartMetrics.width) / 2
     const restartY = gameOverY + 60
-    
     Game.ctx.fillText(restartText, restartX, restartY)
 
     if (Game.score > maxScore) localStorage.setItem("gameScore", Game.score)
