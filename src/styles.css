@@ -44,7 +44,7 @@ canvas {
 }
 
 #secondary-controls {
-  margin-top: 20px;
+  margin-top: 30px;
   font-size: 0.8em;
   display: flex;
   gap: 15px;
