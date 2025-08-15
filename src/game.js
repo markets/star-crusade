@@ -112,12 +112,12 @@ class Bullet {
 
 function updateSoundButton() {
   const soundBtn = document.getElementById('sound-btn')
-  const iconSpan = soundBtn.querySelector('.icon')
+  const icon = soundBtn.querySelector('.icon')
   
   if (Game.sound) {
-    iconSpan.textContent = '🔈'
+    icon.textContent = '🔈'
   } else {
-    iconSpan.textContent = '🔇'
+    icon.textContent = '🔇'
   }
 }
 
@@ -133,7 +133,7 @@ function start() {
   Game.backgroundImage.src = "assets/background.jpeg"
   Game.playerImage.src = "assets/ship.png"
 
-  // Create player AFTER canvas is resized
+  // Create player
   Game.player = new Player()
 
   // Each second, spawn new Enemies increasing difficulty
@@ -151,7 +151,6 @@ function start() {
     // Prevent scroll when pressing the spacebar
     if (event.key === " " && event.target == document.body) event.preventDefault()
 
-    // Start audio on first user interaction
     play("soundtrack", 0.25)
   })
 
@@ -164,7 +163,7 @@ function start() {
   setupMobileControls()
   
   // Bottom controls (sound/restart buttons)
-  setupBottomControlsListeners()
+  setupSecondaryControls()
   
   // Initialize sound button
   updateSoundButton()
@@ -239,7 +238,7 @@ function resizeCanvas() {
   }
 }
 
-function setupBottomControlsListeners() {
+function setupSecondaryControls() {
   const soundBtn = document.getElementById('sound-btn')
   const restartBtn = document.getElementById('restart-btn')
   

@@ -5,7 +5,7 @@ body {
   font-size: 1.2em;
   text-align: center;
   margin: 0;
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden;
 }
 
 a {
@@ -31,7 +31,6 @@ canvas {
   height: auto;
 }
 
-/* Mobile controls */
 #mobile-controls {
   display: none;
   justify-content: space-between;
@@ -41,11 +40,10 @@ canvas {
   margin: 10px auto 0;
   padding: 0 15px;
   position: relative;
-  box-sizing: border-box; /* Prevent overflow */
+  box-sizing: border-box;
 }
 
-/* Bottom controls container */
-#bottom-controls {
+#secondary-controls {
   margin-top: 20px;
   font-size: 0.8em;
   display: flex;
@@ -64,37 +62,14 @@ canvas {
   display: inline;
 }
 
-/* Footer styling */
 #footer {
   font-size: 0.7em;
   margin-top: 30px;
 }
 
-.control-button {
-  background-color: rgba(255, 255, 255, 0.2);
-  border: 2px solid white;
-  border-radius: 10px;
-  color: white;
-  font-family: 'Press Start 2P';
-  font-size: 16px;
-  padding: 15px 20px;
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s;
-}
-
-.control-button:active {
-  background-color: rgba(255, 255, 255, 0.4);
-}
-
 .movement-controls {
   display: flex;
   gap: 10px;
-}
-
-.shoot-button {
-  font-size: 18px;
-  padding: 20px 30px;
 }
 
 /* Desktop styling */
@@ -104,6 +79,7 @@ canvas {
     max-width: 1400px;
   }
 }
+
 /* Show mobile controls on touch devices and small screens */
 @media (pointer: coarse), (max-width: 768px) {
   #mobile-controls {
@@ -114,14 +90,12 @@ canvas {
     display: none;
   }
   
-  /* Mobile-specific button styling: remove borders and make icons bigger */
-  .control-button {
-    background-color: rgba(255, 255, 255, 0.3);
-    border: none;
-    border-radius: 15px;
-    color: white;
-    font-size: 28px;
-    padding: 25px;
+  button {
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 2px solid white;
+    border-radius: 10px;
+    font-size: 40px;
+    padding: 20px;
     min-width: 70px;
     min-height: 70px;
     display: flex;
@@ -129,19 +103,7 @@ canvas {
     justify-content: center;
   }
   
-  .control-button:active {
-    background-color: rgba(255, 255, 255, 0.5);
-  }
-  
-  .shoot-button {
-    font-size: 32px;
-    padding: 30px;
-    min-width: 80px;
-    min-height: 70px;
-  }
-  
-  /* Style bottom controls for mobile */
-  #bottom-controls {
+  #secondary-controls {
     gap: 15px;
   }
 }
