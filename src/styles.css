@@ -48,6 +48,20 @@ canvas {
 #bottom-controls {
   margin-top: 20px;
   font-size: 0.8em;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+}
+
+.control-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.control-item .icon {
+  display: inline;
 }
 
 /* Footer styling */

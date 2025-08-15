@@ -116,9 +116,23 @@ function updateSoundButton() {
   const bottomControls = document.getElementById('bottom-controls')
   
   if (Game.sound) {
-    bottomControls.innerHTML = '🔈 <a href="#" id="sound-btn">Sound</a> 🔄 <a href="#" id="restart-btn">Restart</a>'
+    bottomControls.innerHTML = `
+      <div class="control-item">
+        <a href="#" id="sound-btn"><span class="icon">🔈</span> Sound</a>
+      </div>
+      <div class="control-item">
+        <a href="#" id="restart-btn"><span class="icon">🔄</span> Restart</a>
+      </div>
+    `
   } else {
-    bottomControls.innerHTML = '🔇 <a href="#" id="sound-btn">Sound</a> 🔄 <a href="#" id="restart-btn">Restart</a>'
+    bottomControls.innerHTML = `
+      <div class="control-item">
+        <a href="#" id="sound-btn"><span class="icon">🔇</span> Sound</a>
+      </div>
+      <div class="control-item">
+        <a href="#" id="restart-btn"><span class="icon">🔄</span> Restart</a>
+      </div>
+    `
   }
   
   // Re-attach event listeners since we replaced the innerHTML
