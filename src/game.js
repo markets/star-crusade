@@ -111,6 +111,8 @@ class Bullet {
 }
 
 function updateSoundButton() {
+  Game.sound = !Game.sound
+
   const soundBtn = document.getElementById('sound-btn')
   const icon = soundBtn.querySelector('.icon')
   
@@ -143,10 +145,7 @@ function start() {
     if (event.key === "ArrowLeft") Game.player.isMovingLeft = true
     if (event.key === "ArrowRight") Game.player.isMovingRight = true
     if (event.key === " ") Game.player.isShooting = true
-    if (event.key === "s") {
-      Game.sound = !Game.sound
-      updateSoundButton()
-    }
+    if (event.key === "s") updateSoundButton()
 
     // Prevent scroll when pressing the spacebar
     if (event.key === " " && event.target == document.body) event.preventDefault()
@@ -162,12 +161,13 @@ function start() {
   // Mobile controls
   setupMobileControls()
   
-  // Bottom controls (sound/restart buttons)
+  // Setup secondary controls (sound/restart buttons)
   setupSecondaryControls()
   
   // Initialize sound button
   updateSoundButton()
 
+  // Start game loop
   gameLoop()
 }
 
@@ -251,12 +251,10 @@ function setupSecondaryControls() {
   // Sound button
   soundBtn.addEventListener('touchstart', (e) => {
     preventDefaults(e)
-    Game.sound = !Game.sound
     updateSoundButton()
   })
   soundBtn.addEventListener('click', (e) => {
     preventDefaults(e)
-    Game.sound = !Game.sound
     updateSoundButton()
   })
 
