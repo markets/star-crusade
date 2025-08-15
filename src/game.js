@@ -173,69 +173,23 @@ function start() {
 
 function resizeCanvas() {
   const canvas = Game.canvas
-  const container = canvas.parentElement
+  const aspectRatio = 1400 / 900 // 1.556
   
-  // Check if we're on mobile
+  // Determine max available space
   const isMobile = window.innerWidth <= 768
+  const maxWidth = isMobile ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
+  const maxHeight = isMobile ? window.innerHeight * 0.75 : Math.min(window.innerHeight * 0.7, 900)
   
-  const originalAspectRatio = 1400 / 900 // 1.556
+  // Calculate dimensions maintaining aspect ratio
+  const widthFromHeight = maxHeight * aspectRatio
+  const heightFromWidth = maxWidth / aspectRatio
   
-  if (isMobile) {
-    // On mobile, maximize screen usage while maintaining aspect ratio
-    const maxWidth = window.innerWidth * 0.95
-    const maxHeight = window.innerHeight * 0.75  // Leave space for controls but use more height
-    
-    // Try both width-constrained and height-constrained approaches
-    // and use whichever gives the larger canvas
-    const widthConstrainedWidth = maxWidth
-    const widthConstrainedHeight = maxWidth / originalAspectRatio
-    
-    const heightConstrainedHeight = maxHeight
-    const heightConstrainedWidth = maxHeight * originalAspectRatio
-    
-    let newWidth, newHeight
-    
-    // Choose the approach that gives us the larger canvas (by area)
-    if (widthConstrainedWidth * widthConstrainedHeight > heightConstrainedWidth * heightConstrainedHeight) {
-      // Width-constrained gives larger area, but check if it fits in height
-      if (widthConstrainedHeight <= maxHeight) {
-        newWidth = widthConstrainedWidth
-        newHeight = widthConstrainedHeight
-      } else {
-        // Doesn't fit, use height-constrained
-        newWidth = heightConstrainedWidth
-        newHeight = heightConstrainedHeight
-      }
-    } else {
-      // Height-constrained gives larger area, but check if it fits in width
-      if (heightConstrainedWidth <= maxWidth) {
-        newWidth = heightConstrainedWidth
-        newHeight = heightConstrainedHeight
-      } else {
-        // Doesn't fit, use width-constrained
-        newWidth = widthConstrainedWidth
-        newHeight = widthConstrainedHeight
-      }
-    }
-    
-    canvas.style.width = newWidth + 'px'
-    canvas.style.height = newHeight + 'px'
-  } else {
-    // Desktop sizing
-    const maxWidth = Math.min(window.innerWidth * 0.95, 1400)
-    const maxHeight = Math.min(window.innerHeight * 0.7, 900)
-    
-    let newWidth = maxWidth
-    let newHeight = newWidth / originalAspectRatio
-    
-    if (newHeight > maxHeight) {
-      newHeight = maxHeight
-      newWidth = newHeight * originalAspectRatio
-    }
-    
-    canvas.style.width = newWidth + 'px'
-    canvas.style.height = newHeight + 'px'
-  }
+  // Use the dimensions that fit within both constraints
+  const newWidth = widthFromHeight <= maxWidth ? widthFromHeight : maxWidth
+  const newHeight = heightFromWidth <= maxHeight ? heightFromWidth : maxHeight
+  
+  canvas.style.width = newWidth + 'px'
+  canvas.style.height = newHeight + 'px'
 }
 
 function setupSecondaryControls() {
