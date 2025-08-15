@@ -113,30 +113,14 @@ class Bullet {
 // Audio management functions
 
 function updateSoundButton() {
-  const bottomControls = document.getElementById('bottom-controls')
+  const soundBtn = document.getElementById('sound-btn')
+  const iconSpan = soundBtn.querySelector('.icon')
   
   if (Game.sound) {
-    bottomControls.innerHTML = `
-      <div class="control-item">
-        <a href="#" id="sound-btn"><span class="icon">🔈</span> Sound</a>
-      </div>
-      <div class="control-item">
-        <a href="#" id="restart-btn"><span class="icon">🔄</span> Restart</a>
-      </div>
-    `
+    iconSpan.textContent = '🔈'
   } else {
-    bottomControls.innerHTML = `
-      <div class="control-item">
-        <a href="#" id="sound-btn"><span class="icon">🔇</span> Sound</a>
-      </div>
-      <div class="control-item">
-        <a href="#" id="restart-btn"><span class="icon">🔄</span> Restart</a>
-      </div>
-    `
+    iconSpan.textContent = '🔇'
   }
-  
-  // Re-attach event listeners since we replaced the innerHTML
-  setupBottomControlsListeners()
 }
 
 function start() {
