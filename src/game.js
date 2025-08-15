@@ -146,6 +146,7 @@ function start() {
     if (event.key === "ArrowRight") Game.player.isMovingRight = true
     if (event.key === " ") Game.player.isShooting = true
     if (event.key === "s") updateSoundButton()
+    if (event.key === "r") restart()
 
     // Prevent scroll when pressing the spacebar
     if (event.key === " " && event.target == document.body) event.preventDefault()
@@ -215,11 +216,11 @@ function setupSecondaryControls() {
   // Restart button
   restartBtn.addEventListener('touchstart', (e) => {
     preventDefaults(e)
-    location.reload()
+    restart()
   })
   restartBtn.addEventListener('click', (e) => {
     preventDefaults(e)
-    location.reload()
+    restart()
   })
 }
 
@@ -279,19 +280,22 @@ function setupMobileControls() {
     preventDefaults(e)
     Game.player.isShooting = true
   })
+}
 
+function restart() {
+  location.reload()
 }
 
 function spawnEnemies() {
   Game.interval++
 
-  let maxEnemies = randomInt(2, Math.round(Game.interval / 5))
+  let maxEnemies = randomInt(2, Math.round(Game.interval / 10))
   let maxSpeed = maxEnemies + 1
   let maxSize = (maxSpeed + 10) * 10
 
   if (maxEnemies > 15) maxEnemies = 15
-  if (maxSpeed > 25) maxSpeed = 25
-  if (maxSize > 150) maxSize = 150
+  if (maxSpeed > 30) maxSpeed = 30
+  if (maxSize > 200) maxSize = 200
 
   generateEnemies(maxEnemies, { maxSpeed: maxSpeed, maxSize: maxSize })
 }
@@ -364,8 +368,8 @@ function render() {
   // Render score
   const maxScore = localStorage.getItem("gameScore") || 0
   Game.ctx.fillStyle = "white"
-  Game.ctx.font = `20px '${Game.font}'`
-  Game.ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 10, 30)
+  Game.ctx.font = `30px '${Game.font}'`
+  Game.ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 20, 50)
 
   // Notify new record achieved
   if (Game.score > maxScore && !Game.newMaxScore) {
@@ -379,25 +383,21 @@ function render() {
 
     Game.ctx.fillStyle = "white"
 
-    Game.ctx.font = `60px '${Game.font}'`
+    Game.ctx.font = `90px '${Game.font}'`
     const gameOverText = "GAME OVER"
     const gameOverMetrics = Game.ctx.measureText(gameOverText)
     const gameOverX = (Game.canvas.width - gameOverMetrics.width) / 2
     const gameOverY = Game.canvas.height / 2 - 20
     Game.ctx.fillText(gameOverText, gameOverX, gameOverY)
     
-    Game.ctx.font = `20px '${Game.font}'`
+    Game.ctx.font = `30px '${Game.font}'`
     const restartText = "Press R to restart"
     const restartMetrics = Game.ctx.measureText(restartText)
     const restartX = (Game.canvas.width - restartMetrics.width) / 2
-    const restartY = gameOverY + 60
+    const restartY = gameOverY + 90
     Game.ctx.fillText(restartText, restartX, restartY)
 
     if (Game.score > maxScore) localStorage.setItem("gameScore", Game.score)
-
-    document.addEventListener("keyup", (event) => {
-      if (event.key === "r") location.reload()
-    })
   }
 }
 
