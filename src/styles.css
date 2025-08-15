@@ -72,24 +72,29 @@ canvas {
   gap: 10px;
 }
 
-/* Desktop styling */
-@media (min-width: 769px) {
-  canvas {
-    width: 90vw;
-    max-width: 1400px;
+@media (max-width: 768px) {
+  body {
+    padding: 0.2em;
+    font-size: 1em;
   }
-}
 
-/* Show mobile controls on touch devices and small screens */
-@media (pointer: coarse), (max-width: 768px) {
+  canvas {
+    max-width: 95vw;
+    max-height: 92vh;
+  }
+
+  #canvas-container {
+    margin-top: 5px;
+  }
+
   #mobile-controls {
     display: flex;
   }
-  
+
   #controls-text {
     display: none;
   }
-  
+
   button {
     background-color: rgba(255, 255, 255, 0.5);
     border: 2px solid white;
@@ -102,33 +107,8 @@ canvas {
     align-items: center;
     justify-content: center;
   }
-  
+
   #secondary-controls {
     gap: 15px;
-  }
-}
-
-/* Responsive canvas sizing */
-@media (max-width: 768px) {
-  body {
-    padding: 0.2em;
-    font-size: 1em;
-  }
-  
-  canvas {
-    /* Let JavaScript handle the sizing to maintain aspect ratio */
-    max-width: 95vw;
-    max-height: 92vh;
-  }
-  
-  #canvas-container {
-    margin-top: 5px;
-  }
-}
-
-@media (min-width: 769px) {
-  canvas {
-    width: 90vw;
-    max-width: 1400px;
   }
 }
