@@ -320,12 +320,10 @@ function setupMobileControls() {
   shootBtn.addEventListener('touchstart', (e) => {
     preventDefaults(e)
     Game.player.isShooting = true
-    play("soundtrack", 0.25)
   })
   shootBtn.addEventListener('click', (e) => {
     preventDefaults(e)
     Game.player.isShooting = true
-    play("soundtrack", 0.25)
   })
 
 }
