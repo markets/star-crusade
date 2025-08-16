@@ -110,19 +110,6 @@ class Bullet {
   }
 }
 
-function updateSoundButton() {
-  Game.sound = !Game.sound
-
-  const soundBtn = document.getElementById('sound-btn')
-  const icon = soundBtn.querySelector('.icon')
-  
-  if (Game.sound) {
-    icon.textContent = '🔈'
-  } else {
-    icon.textContent = '🔇'
-  }
-}
-
 function start() {
   Game.canvas = document.getElementById("game")
   Game.ctx = Game.canvas.getContext("2d")
@@ -159,12 +146,12 @@ function start() {
     if (event.key === "ArrowRight") Game.player.isMovingRight = false
   })
 
-  // Mobile controls
+  // Configure controls for mobile devices
   setupMobileControls()
-  
-  // Setup secondary controls (sound/restart buttons)
-  setupSecondaryControls()
-  
+
+  // Setup options menu
+  setupOptionsMenu()
+
   // Initialize sound button
   updateSoundButton()
 
@@ -193,15 +180,9 @@ function resizeCanvas() {
   canvas.style.height = newHeight + 'px'
 }
 
-function setupSecondaryControls() {
+function setupOptionsMenu() {
   const soundBtn = document.getElementById('sound-btn')
   const restartBtn = document.getElementById('restart-btn')
-  
-  // Prevent default touch behaviors
-  const preventDefaults = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }
   
   // Sound button
   soundBtn.addEventListener('touchstart', (e) => {
@@ -228,12 +209,6 @@ function setupMobileControls() {
   const leftBtn = document.getElementById('left-btn')
   const rightBtn = document.getElementById('right-btn')
   const shootBtn = document.getElementById('shoot-btn')
-
-  // Prevent default touch behaviors
-  const preventDefaults = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }
 
   // Left button
   leftBtn.addEventListener('touchstart', (e) => {
@@ -282,6 +257,25 @@ function setupMobileControls() {
   })
 }
 
+// Prevent default touch behaviors
+function preventDefaults(e) {
+  e.preventDefault()
+  e.stopPropagation()
+}
+
+function updateSoundButton() {
+  Game.sound = !Game.sound
+
+  const soundBtn = document.getElementById('sound-btn')
+  const icon = soundBtn.querySelector('.icon')
+
+  if (Game.sound) {
+    icon.textContent = '🔈'
+  } else {
+    icon.textContent = '🔇'
+  }
+}
+
 function restart() {
   location.reload()
 }
@@ -290,19 +284,15 @@ function spawnEnemies() {
   Game.interval++
 
   let maxEnemies = randomInt(2, Math.round(Game.interval / 10))
-  let maxSpeed = maxEnemies + 1
+  let maxSpeed = maxEnemies + 10
   let maxSize = (maxSpeed + 10) * 10
 
-  if (maxEnemies > 15) maxEnemies = 15
+  if (maxEnemies > 40) maxEnemies = 40
   if (maxSpeed > 30) maxSpeed = 30
   if (maxSize > 200) maxSize = 200
 
-  generateEnemies(maxEnemies, { maxSpeed: maxSpeed, maxSize: maxSize })
-}
-
-function generateEnemies(number, attributes) {
-  for (let i = 0; i < number; i++) {
-    const enemy = new Enemy(randomInt(2, attributes['maxSpeed']), randomInt(30, attributes['maxSize']))
+  for (let i = 0; i < maxEnemies; i++) {
+    const enemy = new Enemy(randomInt(5, maxSpeed), randomInt(50, maxSize))
     Game.enemies.push(enemy)
   }
 }
@@ -387,7 +377,7 @@ function render() {
     const gameOverText = "GAME OVER"
     const gameOverMetrics = Game.ctx.measureText(gameOverText)
     const gameOverX = (Game.canvas.width - gameOverMetrics.width) / 2
-    const gameOverY = Game.canvas.height / 2 - 20
+    const gameOverY = Game.canvas.height / 2 - 30
     Game.ctx.fillText(gameOverText, gameOverX, gameOverY)
     
     Game.ctx.font = `30px '${Game.font}'`
