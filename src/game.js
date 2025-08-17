@@ -27,8 +27,8 @@ const Game = {
 
 class Player {
   constructor() {
-    this.width = 40
-    this.height = 40
+    this.width = 30
+    this.height = 30
     this.x = Game.width / 2 - this.width / 2
     this.y = Game.height - this.height - 10
     this.baseSpeed = 360 // px/s (was 6 px/frame)
@@ -321,7 +321,7 @@ function spawnEnemies() {
   if (Game.paused || Game.gameOver) return
   Game.interval++
 
-  // Difficulty scaling by elapsed “intervals”; clamp caps retained
+  // Difficulty scaling by elapsed “intervals”
   let maxEnemies = Math.round(clamp(Game.interval / 10, 1, 40))
   let maxSpeed = clamp(120 + Game.interval * 4, 120, 420) // px/s
   let maxSize = clamp(40 + Game.interval * 8, 50, 200)
@@ -364,7 +364,7 @@ function update(dt) {
   Game.bullets.forEach((b) => b.update(dt))
   Game.particles.forEach((p) => p.update(dt))
 
-  // Bullet–Enemy collisions (iterate with indices; mark inactive)
+  // Bullet–Enemy collisions
   for (let bi = 0; bi < Game.bullets.length; bi++) {
     const b = Game.bullets[bi]
     if (!b.active) continue
@@ -396,7 +396,7 @@ function update(dt) {
     }
   }
 
-  // Cleanup inactive objects (compact arrays)
+  // Cleanup inactive objects
   Game.bullets = Game.bullets.filter(b => b.active)
   Game.enemies = Game.enemies.filter(e => e.active)
   Game.particles = Game.particles.filter(p => p.active)
@@ -427,15 +427,15 @@ function render() {
   Game.bullets.forEach((b) => b.render())
   Game.particles.forEach((p) => p.render())
 
-  // HUD: score, best, lives, pause
-  const maxScore = parseInt(localStorage.getItem('gameScore') || '0') || 0
+  // HUD
+  const maxScore = parseInt(localStorage.getItem('gameScore')) || 0
   ctx.fillStyle = 'white'
   ctx.font = `20px '${Game.font}'`
   ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 20, 40)
 
   // Lives
   ctx.font = `15px '${Game.font}'`
-  ctx.fillText(`Lives: ${Game.player.lives}`, 20, 70)
+  ctx.fillText(`Lives ${Game.player.lives}`, 20, 70)
 
   // Notify new record achieved
   if (Game.score > maxScore && !Game.newMaxScore) {
@@ -468,7 +468,7 @@ function render() {
   }
 
   if (Game.paused && !Game.gameOver) {
-    ctx.fillStyle = 'rgba(0,0,0,0.4)'
+    ctx.fillStyle = 'rgba(0,0,0,0.6)'
     ctx.fillRect(0, 0, Game.width, Game.height)
     ctx.fillStyle = 'white'
     ctx.font = `40px '${Game.font}'`
