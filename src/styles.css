@@ -1,7 +1,6 @@
 body {
   background-color: #e2e8f0;
   font-family: 'Press Start 2P';
-  font-size: 1.2em;
   text-align: center;
   margin: 0;
   overflow-x: hidden;
@@ -26,8 +25,6 @@ button {
   width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
-  flex-direction: column;
 }
 
 canvas {
@@ -62,8 +59,8 @@ canvas {
 }
 
 #footer {
-  font-size: 0.7em;
-  margin-top: 30px;
+  font-size: 0.6em;
+  margin-top: 40px;
 }
 
 .movement-controls {
@@ -72,8 +69,8 @@ canvas {
 }
 
 @media (max-width: 768px) {
-  body {
-    font-size: 1em;
+  h1 {
+    font-size: 1.5em;
   }
 
   #mobile-controls {
