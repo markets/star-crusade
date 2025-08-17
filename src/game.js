@@ -31,7 +31,7 @@ class Player {
     this.height = 30
     this.x = Game.width / 2 - this.width / 2
     this.y = Game.height - this.height - 10
-    this.baseSpeed = 360 // px/s (was 6 px/frame)
+    this.baseSpeed = 360 // px/s
     this.speed = this.baseSpeed
     this.isMovingLeft = false
     this.isMovingRight = false
@@ -116,7 +116,7 @@ class Bullet {
     this.height = 10
     this.x = x - this.width / 2
     this.y = y - this.height
-    this.speed = 980 // px/s (was 10 px/frame)
+    this.speed = 980 // px/s
     this.active = true
   }
 
@@ -288,8 +288,8 @@ function setupMobileControls() {
 
 // Prevent default touch/scroll behaviors
 function preventDefaults(e) {
-  e.preventDefault();
-  e.stopPropagation();
+  e.preventDefault()
+  e.stopPropagation()
 }
 
 function preventSpaceScroll(e) {
@@ -323,8 +323,8 @@ function spawnEnemies() {
 
   // Difficulty scaling by elapsed “intervals”
   let maxEnemies = Math.round(clamp(Game.interval / 10, 1, 40))
-  let maxSpeed = clamp(120 + Game.interval * 4, 120, 420) // px/s
-  let maxSize = clamp(40 + Game.interval * 8, 50, 200)
+  let maxSpeed = clamp(120 + Game.interval * 10, 120, 600) // px/s
+  let maxSize = clamp(40 + Game.interval * 10, 50, 200)
 
   for (let i = 0; i < maxEnemies; i++) {
     const speed = randomInt(80, maxSpeed)
