@@ -1,52 +1,99 @@
 const Game = {
   canvas: null,
   ctx: null,
+
+  // Logical (CSS) size used by game logic; canvas is scaled for HiDPI.
+  width: 0,
+  height: 0,
+  dpr: 1,
+
   sound: true,
+  musicStarted: false,
+
   player: null,
   enemies: [],
   bullets: [],
+
+  // simple particles for hit feedback (optional visuals)
+  particles: [],
+
   score: 0,
   newMaxScore: false,
   gameOver: false,
+  gameOverSfxPlayed: false,
+  paused: false,
+
   backgroundImage: new Image(),
   backgroundY: 0,
-  interval: 0,
+  backgroundSpeed: 140, // px/s (was 1px/frame)
+
+  interval: 0,          // difficulty timer “ticks”
+  lastFrameTime: 0,     // for dt
+  frameId: 0,           // rAF id
+  spawnIntervalId: 0,   // setInterval id
+
   font: 'Press Start 2P',
   playerImage: new Image()
 }
+
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)) }
 
 class Player {
   constructor() {
     this.width = 40
     this.height = 40
-    this.x = Game.canvas.width / 2 - this.width / 2
-    this.y = Game.canvas.height - this.height - 10
-    this.speed = 6
+    this.x = Game.width / 2 - this.width / 2
+    this.y = Game.height - this.height - 10
+    this.baseSpeed = 360 // px/s (was 6 px/frame)
+    this.speed = this.baseSpeed
     this.isMovingLeft = false
     this.isMovingRight = false
     this.isShooting = false
+
+    // Continuous fire
+    this.fireRate = 7.0   // bullets per second
+    this.fireCooldown = 0 // seconds
+
+    // Survivability
+    this.lives = 3
+    this.invuln = 0       // seconds of invulnerability (blink)
   }
 
-  update() {
-    // Move the player
-    if (this.isMovingLeft) this.x -= this.speed
-    if (this.isMovingRight) this.x += this.speed
+  update(dt) {
+    // Movement
+    let vx = 0
+    if (this.isMovingLeft) vx -= 1
+    if (this.isMovingRight) vx += 1
+    this.x += vx * this.speed * dt
 
-    // Ensure the player is inside the canvas
-    if (this.x < 0) this.x = 0
-    if (this.x > Game.canvas.width - this.width) this.x = Game.canvas.width - this.width
+    // Keep inside playfield
+    this.x = clamp(this.x, 0, Game.width - this.width)
 
-    // Shoot bullet
-    if (this.isShooting) {
-      this.isShooting = false
+    // Timers
+    this.fireCooldown = Math.max(0, this.fireCooldown - dt)
+    this.invuln = Math.max(0, this.invuln - dt)
+
+    // Shooting
+    if (this.isShooting && this.fireCooldown === 0) {
+      this.fireCooldown = 1 / this.fireRate
       Game.bullets.push(new Bullet(this.x + this.width / 2, this.y))
-
       play('shoot')
     }
   }
 
   render() {
+    // Blink when invulnerable
+    if (this.invuln > 0 && Math.floor(performance.now() / 100) % 2 === 0) return
     Game.ctx.drawImage(Game.playerImage, this.x, this.y, this.width, this.height)
+  }
+
+  hit() {
+    if (this.invuln > 0 || Game.gameOver) return
+    this.lives -= 1
+    this.invuln = 1.2
+    if (this.lives <= 0) {
+      Game.gameOver = true
+    }
   }
 }
 
@@ -54,23 +101,23 @@ class Enemy {
   constructor(speed, size = 50) {
     this.width = size
     this.height = size
-    this.x = Math.random() * (Game.canvas.width - this.width)
-    this.y = 0
-    this.speed = speed
+    this.x = Math.random() * (Game.width - this.width)
+    this.y = -this.height
+    this.speed = speed // px/s
     this.color = randomColor()
+    this.active = true
   }
 
-  update() {
-    // Move the enemy
-    this.y += this.speed
-
-    // Check if the enemy has reached the end of the canvas
-    if (this.y > Game.canvas.height) {
-      Game.enemies = Game.enemies.filter((enemy) => enemy !== this)
+  update(dt) {
+    if (!this.active) return
+    this.y += this.speed * dt
+    if (this.y > Game.height) {
+      this.active = false
     }
   }
 
   render() {
+    if (!this.active) return
     Game.ctx.fillStyle = this.color
     Game.ctx.fillRect(this.x, this.y, this.width, this.height)
   }
@@ -82,127 +129,136 @@ class Bullet {
     this.height = 10
     this.x = x - this.width / 2
     this.y = y - this.height
-    this.speed = 10
+    this.speed = 980 // px/s (was 10 px/frame)
+    this.active = true
   }
 
-  update() {
-    // Move the bullet
-    this.y -= this.speed
-
-    // Check if the bullet is outside canvas
-    if (this.y < 0) {
-      Game.bullets = Game.bullets.filter((bullet) => bullet !== this)
-    }
-
-    // Check if the bullet has hit an enemy
-    Game.enemies.forEach((enemy) => {
-      if (collision(this, enemy)) {
-        Game.enemies = Game.enemies.filter((e) => e !== enemy)
-        Game.bullets = Game.bullets.filter((bullet) => bullet !== this)
-        Game.score += 10
-      }
-    })
+  update(dt) {
+    if (!this.active) return
+    this.y -= this.speed * dt
+    if (this.y < -this.height) this.active = false
   }
 
   render() {
-    Game.ctx.fillStyle = "white"
+    if (!this.active) return
+    Game.ctx.fillStyle = 'white'
     Game.ctx.fillRect(this.x, this.y, this.width, this.height)
   }
 }
 
-function start() {
-  Game.canvas = document.getElementById("game")
-  Game.ctx = Game.canvas.getContext("2d")
+class Particle {
+  constructor(x, y, vx, vy, life, color) {
+    this.x = x; this.y = y
+    this.vx = vx; this.vy = vy
+    this.life = life
+    this.t = 0
+    this.color = color
+    this.active = true
+  }
 
-  // Make canvas responsive
+  update(dt) {
+    if (!this.active) return
+    this.t += dt
+    if (this.t >= this.life) { this.active = false; return }
+    this.x += this.vx * dt
+    this.y += this.vy * dt
+    this.vy += 900 * dt // tiny gravity
+  }
+
+  render() {
+    if (!this.active) return
+    const a = clamp(1 - this.t / this.life, 0, 1)
+    Game.ctx.fillStyle = `rgba(255,220,120,${a.toFixed(3)})`
+    Game.ctx.fillRect(this.x, this.y, 2, 2)
+  }
+}
+
+function start() {
+  Game.canvas = document.getElementById('game')
+  Game.ctx = Game.canvas.getContext('2d')
+
+  // Make canvas responsive & crisp
   resizeCanvas()
-  window.addEventListener('resize', resizeCanvas)
+  window.addEventListener('resize', resizeCanvas, { passive: true })
 
   // Load images
-  Game.backgroundImage.src = "assets/background.jpeg"
-  Game.playerImage.src = "assets/ship.png"
+  Game.backgroundImage.src = 'assets/background.jpeg'
+  Game.playerImage.src = 'assets/ship.png'
 
   // Create player
   Game.player = new Player()
 
-  // Each second, spawn new Enemies increasing difficulty
-  setInterval(spawnEnemies, 1000)
+  // Spawn loop (kept name; internal scaling improved)
+  if (Game.spawnIntervalId) clearInterval(Game.spawnIntervalId)
+  Game.spawnIntervalId = setInterval(spawnEnemies, 1000)
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowLeft") Game.player.isMovingLeft = true
-    if (event.key === "ArrowRight") Game.player.isMovingRight = true
-    if (event.key === " ") Game.player.isShooting = true
-    if (event.key === "s") updateSoundButton()
-    if (event.key === "r") restart()
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft' || event.key === 'a') Game.player.isMovingLeft = true
+    if (event.key === 'ArrowRight' || event.key === 'd') Game.player.isMovingRight = true
+    if (event.key === ' ') { Game.player.isShooting = true; preventSpaceScroll(event) }
+    if (event.key === 's') updateSoundButton()
+    if (event.key === 'r') restart()
+    if (event.key === 'p') togglePause()
 
-    // Prevent scroll when pressing the spacebar
-    if (event.key === " " && event.target == document.body) event.preventDefault()
-
-    play("soundtrack", 0.25)
+    // Start music on first input
+    if (!Game.musicStarted) { Game.musicStarted = true; play('soundtrack', 0.25) }
   })
 
-  document.addEventListener("keyup", (event) => {
-    if (event.key === "ArrowLeft") Game.player.isMovingLeft = false
-    if (event.key === "ArrowRight") Game.player.isMovingRight = false
+  document.addEventListener('keyup', (event) => {
+    if (event.key === 'ArrowLeft' || event.key === 'a') Game.player.isMovingLeft = false
+    if (event.key === 'ArrowRight' || event.key === 'd') Game.player.isMovingRight = false
+    if (event.key === ' ') Game.player.isShooting = false
   })
 
   // Configure controls for mobile devices
   setupMobileControls()
-
-  // Setup options menu
   setupOptionsMenu()
-
-  // Initialize sound button
   updateSoundButton()
 
-  // Start game loop
-  gameLoop()
+  // Start game loop (delta time)
+  Game.lastFrameTime = performance.now()
+  Game.frameId = requestAnimationFrame(gameLoop)
 }
 
 function resizeCanvas() {
-  const canvas = Game.canvas
-  const aspectRatio = 1400 / 900 // 1.556
-  
-  // Determine max available space
+  // Maintain original aspect; scale to window; then fit backing store for HiDPI
+  const aspectRatio = 1400 / 900
   const isMobile = window.innerWidth <= 768
-  const maxWidth = isMobile ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
-  const maxHeight = isMobile ? window.innerHeight * 0.75 : Math.min(window.innerHeight * 0.7, 900)
-  
-  // Calculate dimensions maintaining aspect ratio
-  const widthFromHeight = maxHeight * aspectRatio
-  const heightFromWidth = maxWidth / aspectRatio
-  
-  // Use the dimensions that fit within both constraints
-  const newWidth = widthFromHeight <= maxWidth ? widthFromHeight : maxWidth
-  const newHeight = heightFromWidth <= maxHeight ? heightFromWidth : maxHeight
-  
-  canvas.style.width = newWidth + 'px'
-  canvas.style.height = newHeight + 'px'
+  const maxW = isMobile ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
+  const maxH = isMobile ? window.innerHeight * 0.75 : Math.min(window.innerHeight * 0.7, 900)
+
+  const widthFromHeight = maxH * aspectRatio
+  const heightFromWidth = maxW / aspectRatio
+  const cssW = Math.floor(widthFromHeight <= maxW ? widthFromHeight : maxW)
+  const cssH = Math.floor(heightFromWidth <= maxH ? heightFromWidth : maxH)
+
+  // Update CSS size
+  const canvas = Game.canvas
+  canvas.style.width = cssW + 'px'
+  canvas.style.height = cssH + 'px'
+
+  // Update logical game size (CSS pixels)
+  Game.width = cssW
+  Game.height = cssH
+
+  // HiDPI backing store
+  Game.dpr = window.devicePixelRatio || 1
+  canvas.width = Math.floor(cssW * Game.dpr)
+  canvas.height = Math.floor(cssH * Game.dpr)
+  Game.ctx.setTransform(Game.dpr, 0, 0, Game.dpr, 0, 0)
 }
 
 function setupOptionsMenu() {
   const soundBtn = document.getElementById('sound-btn')
   const restartBtn = document.getElementById('restart-btn')
-  
+
   // Sound button
-  soundBtn.addEventListener('touchstart', (e) => {
-    preventDefaults(e)
-    updateSoundButton()
-  })
-  soundBtn.addEventListener('click', (e) => {
-    preventDefaults(e)
-    updateSoundButton()
-  })
+  soundBtn.addEventListener('touchstart', (e) => { preventDefaults(e); updateSoundButton() })
+  soundBtn.addEventListener('click', (e) => { preventDefaults(e); updateSoundButton() })
 
   // Restart button
-  restartBtn.addEventListener('touchstart', (e) => {
-    preventDefaults(e)
-    restart()
-  })
-  restartBtn.addEventListener('click', (e) => {
-    preventDefaults(e)
-    restart()
-  })
+  restartBtn.addEventListener('touchstart', (e) => { preventDefaults(e); restart() })
+  restartBtn.addEventListener('click', (e) => { preventDefaults(e); restart() })
 }
 
 function setupMobileControls() {
@@ -210,156 +266,193 @@ function setupMobileControls() {
   const rightBtn = document.getElementById('right-btn')
   const shootBtn = document.getElementById('shoot-btn')
 
-  // Left button
-  leftBtn.addEventListener('touchstart', (e) => {
-    preventDefaults(e)
-    Game.player.isMovingLeft = true
-  })
-  leftBtn.addEventListener('touchend', (e) => {
-    preventDefaults(e)
-    Game.player.isMovingLeft = false
-  })
-  leftBtn.addEventListener('mousedown', (e) => {
-    preventDefaults(e)
-    Game.player.isMovingLeft = true
-  })
-  leftBtn.addEventListener('mouseup', (e) => {
-    preventDefaults(e)
-    Game.player.isMovingLeft = false
-  })
+  // Left
+  leftBtn.addEventListener('touchstart', (e) => { preventDefaults(e); Game.player.isMovingLeft = true })
+  leftBtn.addEventListener('touchend',   (e) => { preventDefaults(e); Game.player.isMovingLeft = false })
+  leftBtn.addEventListener('mousedown',  (e) => { preventDefaults(e); Game.player.isMovingLeft = true })
+  leftBtn.addEventListener('mouseup',    (e) => { preventDefaults(e); Game.player.isMovingLeft = false })
+  leftBtn.addEventListener('mouseleave', (e) => { Game.player.isMovingLeft = false })
 
-  // Right button
-  rightBtn.addEventListener('touchstart', (e) => {
-    preventDefaults(e)
-    Game.player.isMovingRight = true
-  })
-  rightBtn.addEventListener('touchend', (e) => {
-    preventDefaults(e)
-    Game.player.isMovingRight = false
-  })
-  rightBtn.addEventListener('mousedown', (e) => {
-    preventDefaults(e)
-    Game.player.isMovingRight = true
-  })
-  rightBtn.addEventListener('mouseup', (e) => {
-    preventDefaults(e)
-    Game.player.isMovingRight = false
-  })
+  // Right
+  rightBtn.addEventListener('touchstart', (e) => { preventDefaults(e); Game.player.isMovingRight = true })
+  rightBtn.addEventListener('touchend',   (e) => { preventDefaults(e); Game.player.isMovingRight = false })
+  rightBtn.addEventListener('mousedown',  (e) => { preventDefaults(e); Game.player.isMovingRight = true })
+  rightBtn.addEventListener('mouseup',    (e) => { preventDefaults(e); Game.player.isMovingRight = false })
+  rightBtn.addEventListener('mouseleave', (e) => { Game.player.isMovingRight = false })
 
-  // Shoot button
-  shootBtn.addEventListener('touchstart', (e) => {
-    preventDefaults(e)
-    Game.player.isShooting = true
-  })
-  shootBtn.addEventListener('click', (e) => {
-    preventDefaults(e)
-    Game.player.isShooting = true
-  })
+  // Shoot (hold to autofire)
+  shootBtn.addEventListener('touchstart', (e) => { preventDefaults(e); Game.player.isShooting = true })
+  shootBtn.addEventListener('touchend',   (e) => { preventDefaults(e); Game.player.isShooting = false })
+  shootBtn.addEventListener('mousedown',  (e) => { preventDefaults(e); Game.player.isShooting = true })
+  shootBtn.addEventListener('mouseup',    (e) => { preventDefaults(e); Game.player.isShooting = false })
+  shootBtn.addEventListener('mouseleave', () => { Game.player.isShooting = false })
 }
 
-// Prevent default touch behaviors
-function preventDefaults(e) {
-  e.preventDefault()
-  e.stopPropagation()
-}
+// Prevent default touch/scroll behaviors
+function preventDefaults(e) { e.preventDefault(); e.stopPropagation() }
+function preventSpaceScroll(e) { if (e.target === document.body) e.preventDefault() }
 
 function updateSoundButton() {
   Game.sound = !Game.sound
-
   const soundBtn = document.getElementById('sound-btn')
   const icon = soundBtn.querySelector('.icon')
+  icon.textContent = Game.sound ? '🔈' : '🔇'
 
-  if (Game.sound) {
-    icon.textContent = '🔈'
-  } else {
-    icon.textContent = '🔇'
-  }
+  // Update soundtrack volume live (if present)
+  const music = document.getElementById('soundtrack')
+  if (music) music.volume = Game.sound ? 0.25 : 0
 }
 
 function restart() {
-  location.reload()
+  // Clean reset without full page reload
+  Game.enemies.length = 0
+  Game.bullets.length = 0
+  Game.particles.length = 0
+  Game.score = 0
+  Game.interval = 0
+  Game.backgroundY = 0
+  Game.gameOver = false
+  Game.gameOverSfxPlayed = false
+  Game.newMaxScore = false
+  Game.player = new Player()
+  if (!Game.spawnIntervalId) Game.spawnIntervalId = setInterval(spawnEnemies, 1000)
+  if (!Game.musicStarted) { Game.musicStarted = true; play('soundtrack', 0.25) }
+}
+
+function togglePause() {
+  Game.paused = !Game.paused
+  if (!Game.paused && !Game.gameOver) {
+    // Resume loop
+    Game.lastFrameTime = performance.now()
+    Game.frameId = requestAnimationFrame(gameLoop)
+  }
 }
 
 function spawnEnemies() {
+  if (Game.paused || Game.gameOver) return
   Game.interval++
 
-  let maxEnemies = randomInt(2, Math.round(Game.interval / 10))
-  let maxSpeed = maxEnemies + 10
-  let maxSize = (maxSpeed + 10) * 10
-
-  if (maxEnemies > 40) maxEnemies = 40
-  if (maxSpeed > 30) maxSpeed = 30
-  if (maxSize > 200) maxSize = 200
+  // Difficulty scaling by elapsed “intervals”; clamp caps retained
+  let maxEnemies = Math.round(clamp(Game.interval / 10, 1, 40))
+  let maxSpeed = clamp(120 + Game.interval * 4, 120, 420) // px/s
+  let maxSize = clamp(40 + Game.interval * 8, 50, 200)
 
   for (let i = 0; i < maxEnemies; i++) {
-    const enemy = new Enemy(randomInt(5, maxSpeed), randomInt(50, maxSize))
-    Game.enemies.push(enemy)
+    const speed = randomInt(80, maxSpeed)
+    const size = randomInt(30, maxSize)
+    Game.enemies.push(new Enemy(speed, size))
   }
 }
 
 function randomInt(min, max) {
-  let difference = max - min
-  let rand = Math.random()
-
-  rand = Math.floor(rand * difference)
-  rand = rand + min
-
-  return rand
+  const diff = Math.max(0, max - min)
+  return Math.floor(Math.random() * diff) + min
 }
 
 function randomColor() {
-  return `#${Math.floor(Math.random()*16777215).toString(16)}`
+  // brighter palette for visibility
+  const r = randomInt(160, 255)
+  const g = randomInt(80,  210)
+  const b = randomInt(160, 255)
+  return `rgb(${r},${g},${b})`
 }
 
 function play(sound, volume = 0.2) {
   const audio = document.getElementById(sound)
-
+  if (!audio) return
   audio.volume = Game.sound ? volume : 0
   if (!audio.loop) audio.currentTime = 0
-
-  audio.play()
+  // Allow play() to be called repeatedly for looping audio without restarting
+  if (audio.paused) audio.play().catch(() => {})
 }
 
-function collision(obj1, obj2) {
-  if (
-    obj1.x < obj2.x + obj2.width &&
-    obj1.x + obj1.width > obj2.x &&
-    obj1.y < obj2.y + obj2.height &&
-    obj1.y + obj1.height > obj2.y
-  ) {
-    return true
-  } else {
-    return false
+function rectsOverlap(a, b) {
+  return (a.x < b.x + b.width &&
+          a.x + a.width > b.x &&
+          a.y < b.y + b.height &&
+          a.y + a.height > b.y)
+}
+
+function update(dt) {
+  Game.player.update(dt)
+  Game.enemies.forEach((e) => e.update(dt))
+  Game.bullets.forEach((b) => b.update(dt))
+  Game.particles.forEach((p) => p.update(dt))
+
+  // Bullet–Enemy collisions (iterate with indices; mark inactive)
+  for (let bi = 0; bi < Game.bullets.length; bi++) {
+    const b = Game.bullets[bi]
+    if (!b.active) continue
+    for (let ei = 0; ei < Game.enemies.length; ei++) {
+      const e = Game.enemies[ei]
+      if (!e.active) continue
+      if (rectsOverlap(b, e)) {
+        b.active = false
+        e.active = false
+        Game.score += 10
+        // Spawn small burst of particles
+        spawnHitParticles(e.x + e.width / 2, e.y + e.height / 2, 10)
+        break
+      }
+    }
+  }
+
+  // Player–Enemy collisions
+  for (const e of Game.enemies) {
+    if (!e.active) continue
+    if (rectsOverlap(
+      { x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height },
+      e
+    )) {
+      e.active = false
+      spawnHitParticles(Game.player.x + Game.player.width / 2, Game.player.y + Game.player.height / 2, 14)
+      Game.player.hit()
+      if (Game.player.lives <= 0) {
+        Game.gameOver = true
+      }
+    }
+  }
+
+  // Cleanup inactive objects (compact arrays)
+  Game.bullets = Game.bullets.filter(b => b.active)
+  Game.enemies = Game.enemies.filter(e => e.active)
+  Game.particles = Game.particles.filter(p => p.active)
+
+  // Background scroll with dt
+  Game.backgroundY += Game.backgroundSpeed * dt
+  if (Game.backgroundY >= Game.height)
+    Game.backgroundY -= Game.height
+}
+
+function spawnHitParticles(cx, cy, count) {
+  for (let i = 0; i < count; i++) {
+    const ang = Math.random() * Math.PI * 2
+    const spd = randomInt(80, 220)
+    const vx = Math.cos(ang) * spd
+    const vy = Math.sin(ang) * spd
+    Game.particles.push(new Particle(cx, cy, vx, vy, 0.45, 'rgba(255,220,120,1)'))
   }
 }
 
-function update() {
-  Game.player.update()
-  Game.enemies.forEach((enemy) => enemy.update())
-  Game.bullets.forEach((bullet) => bullet.update())
-
-  // Check if the player was hit by any enemy
-  Game.enemies.forEach((enemy) => {
-    if (collision(Game.player, enemy)) {
-      Game.gameOver = true
-    }
-  })
-}
-
 function render() {
-  Game.ctx.clearRect(0, 0, Game.canvas.width, Game.canvas.height)
-
+  const ctx = Game.ctx
+  ctx.clearRect(0, 0, Game.width, Game.height)
   renderBackground()
 
   Game.player.render()
-  Game.enemies.forEach((enemy) => enemy.render())
-  Game.bullets.forEach((bullet) => bullet.render())
+  Game.enemies.forEach((e) => e.render())
+  Game.bullets.forEach((b) => b.render())
+  Game.particles.forEach((p) => p.render())
 
-  // Render score
-  const maxScore = localStorage.getItem("gameScore") || 0
-  Game.ctx.fillStyle = "white"
-  Game.ctx.font = `30px '${Game.font}'`
-  Game.ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 20, 50)
+  // HUD: score, best, lives, pause
+  const maxScore = parseInt(localStorage.getItem('gameScore') || '0', 10) || 0
+  ctx.fillStyle = 'white'
+  ctx.font = `30px '${Game.font}'`
+  ctx.fillText(`Score ${Game.score}  Record ${maxScore}`, 20, 50)
+
+  // Lives
+  ctx.font = `18px '${Game.font}'`
+  ctx.fillText(`Lives: ${Game.player.lives}`, 20, 80)
 
   // Notify new record achieved
   if (Game.score > maxScore && !Game.newMaxScore) {
@@ -367,44 +460,61 @@ function render() {
     Game.newMaxScore = true
   }
 
-  // GAME OVER
+  // GAME OVER overlay (and write best once)
   if (Game.gameOver) {
-    play('explosion')
+    if (!Game.gameOverSfxPlayed) {
+      play('explosion')
+      Game.gameOverSfxPlayed = true
+      if (Game.score > maxScore) localStorage.setItem('gameScore', String(Game.score))
+      if (Game.spawnIntervalId) { clearInterval(Game.spawnIntervalId); Game.spawnIntervalId = 0 }
+    }
 
-    Game.ctx.fillStyle = "white"
+    ctx.fillStyle = 'rgba(0,0,0,0.6)'
+    ctx.fillRect(0, 0, Game.width, Game.height)
 
-    Game.ctx.font = `90px '${Game.font}'`
-    const gameOverText = "GAME OVER"
-    const gameOverMetrics = Game.ctx.measureText(gameOverText)
-    const gameOverX = (Game.canvas.width - gameOverMetrics.width) / 2
-    const gameOverY = Game.canvas.height / 2 - 30
-    Game.ctx.fillText(gameOverText, gameOverX, gameOverY)
-    
-    Game.ctx.font = `30px '${Game.font}'`
-    const restartText = "Press R to restart"
-    const restartMetrics = Game.ctx.measureText(restartText)
-    const restartX = (Game.canvas.width - restartMetrics.width) / 2
-    const restartY = gameOverY + 90
-    Game.ctx.fillText(restartText, restartX, restartY)
+    ctx.fillStyle = 'white'
+    ctx.font = `90px '${Game.font}'`
+    const gameOverText = 'GAME OVER'
+    const g1 = ctx.measureText(gameOverText)
+    ctx.fillText(gameOverText, (Game.width - g1.width) / 2, Game.height / 2 - 30)
 
-    if (Game.score > maxScore) localStorage.setItem("gameScore", Game.score)
+    ctx.font = `30px '${Game.font}'`
+    const restartText = 'Press R to restart'
+    const g2 = ctx.measureText(restartText)
+    ctx.fillText(restartText, (Game.width - g2.width) / 2, Game.height / 2 + 60)
+  }
+
+  if (Game.paused && !Game.gameOver) {
+    ctx.fillStyle = 'rgba(0,0,0,0.4)'
+    ctx.fillRect(0, 0, Game.width, Game.height)
+    ctx.fillStyle = 'white'
+    ctx.font = `54px '${Game.font}'`
+    const txt = 'PAUSED'
+    const m = ctx.measureText(txt)
+    ctx.fillText(txt, (Game.width - m.width) / 2, Game.height / 2)
   }
 }
 
 function renderBackground() {
-  Game.ctx.drawImage(Game.backgroundImage, 0, Math.floor(Game.backgroundY), Game.canvas.width, Game.canvas.height + 1)
-  Game.ctx.drawImage(Game.backgroundImage, 0, Math.floor(Game.backgroundY - Game.canvas.height), Game.canvas.width, Game.canvas.height + 1)
-
-  Game.backgroundY += 1
-  if (Game.backgroundY >= Game.canvas.height)
-    Game.backgroundY = 0
+  const y = Math.floor(Game.backgroundY)
+  Game.ctx.drawImage(Game.backgroundImage, 0, y, Game.width, Game.height + 1)
+  Game.ctx.drawImage(Game.backgroundImage, 0, y - Game.height, Game.width, Game.height + 1)
 }
 
-function gameLoop() {
-  update()
-  render()
+function gameLoop(now) {
+  const dtMs = now - Game.lastFrameTime
+  Game.lastFrameTime = now
 
-  if (!Game.gameOver) requestAnimationFrame(gameLoop)
+  // Clamp dt to avoid huge jumps on tab‑switch
+  const dt = Math.min(dtMs / 1000, 1 / 30)
+
+  if (!Game.paused && !Game.gameOver) {
+    update(dt)
+    render()
+    Game.frameId = requestAnimationFrame(gameLoop)
+  } else {
+    render() // still render overlays
+  }
 }
 
 start()
