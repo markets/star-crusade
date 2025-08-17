@@ -228,6 +228,12 @@ function resizeCanvas() {
   Game.width = cssW
   Game.height = cssH
 
+  // Reposition player to match new canvas size
+  if (Game.player) {
+    Game.player.x = clamp(Game.player.x, 0, Game.width - Game.player.width)
+    Game.player.y = Game.height - Game.player.height - 10
+  }
+
   // HiDPI backing store
   Game.dpr = window.devicePixelRatio || 1
   canvas.width = Math.floor(cssW * Game.dpr)
