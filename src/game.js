@@ -4,7 +4,7 @@ const Game = {
   width: 0,
   height: 0,
   dpr: 1,
-  sound: true,
+  sound: false,
   player: null,
   enemies: [],
   bullets: [],
@@ -38,12 +38,12 @@ class Player {
     this.isShooting = false
 
     // Continuous fire
-    this.fireRate = 7.0   // bullets per second
+    this.fireRate = 7.0 // bullets per second
     this.fireCooldown = 0 // seconds
 
     // Survivability
     this.lives = 3
-    this.invuln = 0       // seconds of invulnerability (blink)
+    this.invuln = 0 // seconds of invulnerability (blink)
   }
 
   update(dt) {
@@ -166,7 +166,7 @@ function start() {
 
   // Make canvas responsivea
   resizeCanvas()
-  window.addEventListener('resize', resizeCanvas, { passive: true })
+  window.addEventListener('resize', resizeCanvas)
 
   // Load images
   Game.backgroundImage.src = 'assets/background.jpeg'
@@ -249,8 +249,8 @@ function setupOptionsMenu() {
   restartBtn.addEventListener('click', (e) => { preventDefaults(e); restart() })
 
   // Pause button
-  restartBtn.addEventListener('touchstart', (e) => { preventDefaults(e); togglePause()() })
-  restartBtn.addEventListener('click', (e) => { preventDefaults(e); togglePause()() })
+  pauseBtn.addEventListener('touchstart', (e) => { preventDefaults(e); togglePause() })
+  pauseBtn.addEventListener('click', (e) => { preventDefaults(e); togglePause() })
 }
 
 function setupMobileControls() {
@@ -375,10 +375,8 @@ function update(dt) {
   // Player–Enemy collisions
   for (const e of Game.enemies) {
     if (!e.active) continue
-    if (collision(
-      { x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height },
-      e
-    )) {
+
+    if (collision({ x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height }, e)) {
       e.active = false
       spawnHitParticles(Game.player.x + Game.player.width / 2, Game.player.y + Game.player.height / 2, 14)
       Game.player.hit()
@@ -420,14 +418,14 @@ function render() {
   Game.particles.forEach((p) => p.render())
 
   // HUD: score, best, lives, pause
-  const maxScore = parseInt(localStorage.getItem('gameScore') || '0', 10) || 0
+  const maxScore = parseInt(localStorage.getItem('gameScore') || '0') || 0
   ctx.fillStyle = 'white'
-  ctx.font = `30px '${Game.font}'`
-  ctx.fillText(`Score ${Game.score}  Record ${maxScore}`, 20, 50)
+  ctx.font = `20px '${Game.font}'`
+  ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 20, 40)
 
   // Lives
   ctx.font = `15px '${Game.font}'`
-  ctx.fillText(`Lives: ${Game.player.lives}`, 20, 80)
+  ctx.fillText(`Lives: ${Game.player.lives}`, 20, 70)
 
   // Notify new record achieved
   if (Game.score > maxScore && !Game.newMaxScore) {
@@ -448,22 +446,22 @@ function render() {
     ctx.fillRect(0, 0, Game.width, Game.height)
 
     ctx.fillStyle = 'white'
-    ctx.font = `90px '${Game.font}'`
+    ctx.font = `40px '${Game.font}'`
     const gameOverText = 'GAME OVER'
     const g1 = ctx.measureText(gameOverText)
     ctx.fillText(gameOverText, (Game.width - g1.width) / 2, Game.height / 2 - 30)
 
-    ctx.font = `30px '${Game.font}'`
+    ctx.font = `20px '${Game.font}'`
     const restartText = 'Press R to restart'
     const g2 = ctx.measureText(restartText)
-    ctx.fillText(restartText, (Game.width - g2.width) / 2, Game.height / 2 + 60)
+    ctx.fillText(restartText, (Game.width - g2.width) / 2, Game.height / 2 + 40)
   }
 
   if (Game.paused && !Game.gameOver) {
     ctx.fillStyle = 'rgba(0,0,0,0.4)'
     ctx.fillRect(0, 0, Game.width, Game.height)
     ctx.fillStyle = 'white'
-    ctx.font = `50px '${Game.font}'`
+    ctx.font = `40px '${Game.font}'`
     const txt = 'PAUSED'
     const m = ctx.measureText(txt)
     ctx.fillText(txt, (Game.width - m.width) / 2, Game.height / 2)
