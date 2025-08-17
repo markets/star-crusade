@@ -1,0 +1,90 @@
+body {
+  background-color: #e2e8f0;
+  font-family: 'Press Start 2P';
+  font-size: 1.2em;
+  text-align: center;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+a {
+  color: black;
+}
+
+button {
+  background-color: rgba(255, 255, 255, 0.6);
+  border-color: transparent;
+  border-radius: 10px;
+  font-size: 40px;
+  padding: 20px;
+  min-width: 70px;
+  min-height: 70px;
+  display: flex;
+}
+
+#canvas-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+canvas {
+  display: block;
+  border-radius: 10px;
+  max-width: 100%;
+  height: auto;
+}
+
+#mobile-controls {
+  display: none;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1400px;
+  margin: 10px auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+#options {
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+}
+
+.control-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.control-item .icon {
+  display: inline;
+}
+
+#footer {
+  font-size: 0.7em;
+  margin-top: 30px;
+}
+
+.movement-controls {
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 1em;
+  }
+
+  #mobile-controls {
+    display: flex;
+  }
+
+  #controls-text {
+    display: none;
+  }
+}

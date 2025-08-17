@@ -114,6 +114,10 @@ function start() {
   Game.canvas = document.getElementById("game")
   Game.ctx = Game.canvas.getContext("2d")
 
+  // Make canvas responsive
+  resizeCanvas()
+  window.addEventListener('resize', resizeCanvas)
+
   // Load images
   Game.backgroundImage.src = "assets/background.jpeg"
   Game.playerImage.src = "assets/ship.png"
@@ -128,7 +132,8 @@ function start() {
     if (event.key === "ArrowLeft") Game.player.isMovingLeft = true
     if (event.key === "ArrowRight") Game.player.isMovingRight = true
     if (event.key === " ") Game.player.isShooting = true
-    if (event.key === "s") Game.sound = !Game.sound
+    if (event.key === "s") updateSoundButton()
+    if (event.key === "r") restart()
 
     // Prevent scroll when pressing the spacebar
     if (event.key === " " && event.target == document.body) event.preventDefault()
@@ -141,26 +146,153 @@ function start() {
     if (event.key === "ArrowRight") Game.player.isMovingRight = false
   })
 
+  // Configure controls for mobile devices
+  setupMobileControls()
+
+  // Setup options menu
+  setupOptionsMenu()
+
+  // Initialize sound button
+  updateSoundButton()
+
+  // Start game loop
   gameLoop()
+}
+
+function resizeCanvas() {
+  const canvas = Game.canvas
+  const aspectRatio = 1400 / 900 // 1.556
+  
+  // Determine max available space
+  const isMobile = window.innerWidth <= 768
+  const maxWidth = isMobile ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
+  const maxHeight = isMobile ? window.innerHeight * 0.75 : Math.min(window.innerHeight * 0.7, 900)
+  
+  // Calculate dimensions maintaining aspect ratio
+  const widthFromHeight = maxHeight * aspectRatio
+  const heightFromWidth = maxWidth / aspectRatio
+  
+  // Use the dimensions that fit within both constraints
+  const newWidth = widthFromHeight <= maxWidth ? widthFromHeight : maxWidth
+  const newHeight = heightFromWidth <= maxHeight ? heightFromWidth : maxHeight
+  
+  canvas.style.width = newWidth + 'px'
+  canvas.style.height = newHeight + 'px'
+}
+
+function setupOptionsMenu() {
+  const soundBtn = document.getElementById('sound-btn')
+  const restartBtn = document.getElementById('restart-btn')
+  
+  // Sound button
+  soundBtn.addEventListener('touchstart', (e) => {
+    preventDefaults(e)
+    updateSoundButton()
+  })
+  soundBtn.addEventListener('click', (e) => {
+    preventDefaults(e)
+    updateSoundButton()
+  })
+
+  // Restart button
+  restartBtn.addEventListener('touchstart', (e) => {
+    preventDefaults(e)
+    restart()
+  })
+  restartBtn.addEventListener('click', (e) => {
+    preventDefaults(e)
+    restart()
+  })
+}
+
+function setupMobileControls() {
+  const leftBtn = document.getElementById('left-btn')
+  const rightBtn = document.getElementById('right-btn')
+  const shootBtn = document.getElementById('shoot-btn')
+
+  // Left button
+  leftBtn.addEventListener('touchstart', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingLeft = true
+  })
+  leftBtn.addEventListener('touchend', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingLeft = false
+  })
+  leftBtn.addEventListener('mousedown', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingLeft = true
+  })
+  leftBtn.addEventListener('mouseup', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingLeft = false
+  })
+
+  // Right button
+  rightBtn.addEventListener('touchstart', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingRight = true
+  })
+  rightBtn.addEventListener('touchend', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingRight = false
+  })
+  rightBtn.addEventListener('mousedown', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingRight = true
+  })
+  rightBtn.addEventListener('mouseup', (e) => {
+    preventDefaults(e)
+    Game.player.isMovingRight = false
+  })
+
+  // Shoot button
+  shootBtn.addEventListener('touchstart', (e) => {
+    preventDefaults(e)
+    Game.player.isShooting = true
+  })
+  shootBtn.addEventListener('click', (e) => {
+    preventDefaults(e)
+    Game.player.isShooting = true
+  })
+}
+
+// Prevent default touch behaviors
+function preventDefaults(e) {
+  e.preventDefault()
+  e.stopPropagation()
+}
+
+function updateSoundButton() {
+  Game.sound = !Game.sound
+
+  const soundBtn = document.getElementById('sound-btn')
+  const icon = soundBtn.querySelector('.icon')
+
+  if (Game.sound) {
+    icon.textContent = '🔈'
+  } else {
+    icon.textContent = '🔇'
+  }
+}
+
+function restart() {
+  location.reload()
 }
 
 function spawnEnemies() {
   Game.interval++
 
-  let maxEnemies = randomInt(2, Math.round(Game.interval / 5))
-  let maxSpeed = maxEnemies + 1
+  let maxEnemies = randomInt(2, Math.round(Game.interval / 10))
+  let maxSpeed = maxEnemies + 10
   let maxSize = (maxSpeed + 10) * 10
 
-  if (maxEnemies > 15) maxEnemies = 15
-  if (maxSpeed > 25) maxSpeed = 25
-  if (maxSize > 150) maxSize = 150
+  if (maxEnemies > 40) maxEnemies = 40
+  if (maxSpeed > 30) maxSpeed = 30
+  if (maxSize > 200) maxSize = 200
 
-  generateEnemies(maxEnemies, { maxSpeed: maxSpeed, maxSize: maxSize })
-}
-
-function generateEnemies(number, attributes) {
-  for (let i = 0; i < number; i++) {
-    const enemy = new Enemy(randomInt(2, attributes['maxSpeed']), randomInt(30, attributes['maxSize']))
+  for (let i = 0; i < maxEnemies; i++) {
+    const enemy = new Enemy(randomInt(5, maxSpeed), randomInt(50, maxSize))
     Game.enemies.push(enemy)
   }
 }
@@ -226,8 +358,8 @@ function render() {
   // Render score
   const maxScore = localStorage.getItem("gameScore") || 0
   Game.ctx.fillStyle = "white"
-  Game.ctx.font = `20px '${Game.font}'`
-  Game.ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 10, 30)
+  Game.ctx.font = `30px '${Game.font}'`
+  Game.ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 20, 50)
 
   // Notify new record achieved
   if (Game.score > maxScore && !Game.newMaxScore) {
@@ -240,24 +372,30 @@ function render() {
     play('explosion')
 
     Game.ctx.fillStyle = "white"
-    Game.ctx.font = `60px '${Game.font}'`
-    Game.ctx.fillText("GAME OVER", 130, 300)
-    Game.ctx.font = `20px '${Game.font}'`
-    Game.ctx.fillText("Press R to restart", 220, 340)
+
+    Game.ctx.font = `90px '${Game.font}'`
+    const gameOverText = "GAME OVER"
+    const gameOverMetrics = Game.ctx.measureText(gameOverText)
+    const gameOverX = (Game.canvas.width - gameOverMetrics.width) / 2
+    const gameOverY = Game.canvas.height / 2 - 30
+    Game.ctx.fillText(gameOverText, gameOverX, gameOverY)
+    
+    Game.ctx.font = `30px '${Game.font}'`
+    const restartText = "Press R to restart"
+    const restartMetrics = Game.ctx.measureText(restartText)
+    const restartX = (Game.canvas.width - restartMetrics.width) / 2
+    const restartY = gameOverY + 90
+    Game.ctx.fillText(restartText, restartX, restartY)
 
     if (Game.score > maxScore) localStorage.setItem("gameScore", Game.score)
-
-    document.addEventListener("keyup", (event) => {
-      if (event.key === "r") location.reload()
-    })
   }
 }
 
 function renderBackground() {
-  Game.ctx.drawImage(Game.backgroundImage, 0, Game.backgroundY)
-  Game.ctx.drawImage(Game.backgroundImage, 0, Game.backgroundY - Game.canvas.height)
+  Game.ctx.drawImage(Game.backgroundImage, 0, Math.floor(Game.backgroundY), Game.canvas.width, Game.canvas.height + 1)
+  Game.ctx.drawImage(Game.backgroundImage, 0, Math.floor(Game.backgroundY - Game.canvas.height), Game.canvas.width, Game.canvas.height + 1)
 
-  Game.backgroundY += 0.5
+  Game.backgroundY += 1
   if (Game.backgroundY >= Game.canvas.height)
     Game.backgroundY = 0
 }

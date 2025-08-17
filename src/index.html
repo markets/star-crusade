@@ -2,40 +2,44 @@
 <html>
 <head>
   <title>Star Crusade 🚀</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <style>
-    body {
-      background-color: #e2e8f0;
-      padding: 1em;
-      font-family: 'Press Start 2P';
-      font-size: 1.2em;
-      text-align: center;
-    }
-    a {
-      color: black;
-    }
-    small {
-      font-size: 12px;
-    }
-    #canvas-container {
-      width: 100%;
-    }
-    canvas {
-      display: inline;
-      border-radius: 10px;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <h1>Star Crusade 🚀</h1>
+
   <div id="canvas-container">
-    <canvas id="game" width="800" height="600"></canvas>
+    <canvas id="game" width="1400" height="900"></canvas>
     <audio id="soundtrack" src="assets/soundtrack.mp3" loop></audio>
     <audio id="shoot" src="assets/laser.wav"></audio>
     <audio id="explosion" src="assets/explosion.wav"></audio>
     <audio id="achievement" src="assets/achievement.wav"></audio>
   </div>
-  <p>◀️▶️ ARROWS 🔫 SPACE 🔈 S</p>
-  <small>💾 <a href="https://github.com/markets/star-crusade" target="_blank">source code</a></small>
+  
+  <div id="mobile-controls">
+    <div class="movement-controls">
+      <button id="left-btn"><span class="icon">◀️</span></button>
+      <button id="right-btn"><span class="icon">▶️</span></button>
+    </div>
+    <button id="shoot-btn"><span class="icon">🔫</span></button>
+  </div>
+  
+  <p id="controls-text">◀️▶️ ARROWS 🔫 SPACE</p>
+  
+  <div id="options">
+    <div class="control-item">
+      <a href="#" id="sound-btn"><span class="icon">🔈</span> Sound (S)</a>
+    </div>
+    <div class="control-item">
+      <a href="#" id="restart-btn"><span class="icon">🔄</span> Restart (R)</a>
+    </div>
+  </div>
+
+  <div id="footer">
+    Made with ♥️ by <a href="https://github.com/markets">@markets</a> and AI 🤖 agents. Source <a href="https://github.com/markets/star-crusade" target="_blank">code</a> 💾.
+  </div>
+
   <script src="game.js"></script>
 </body>
 </html>
