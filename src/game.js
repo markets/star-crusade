@@ -164,7 +164,7 @@ function start() {
   Game.canvas = document.getElementById('game')
   Game.ctx = Game.canvas.getContext('2d')
 
-  // Make canvas responsivea
+  // Make canvas responsive
   resizeCanvas()
   window.addEventListener('resize', resizeCanvas)
 
@@ -175,7 +175,7 @@ function start() {
   // Create player
   Game.player = new Player()
 
-  // Spawn loop (kept name; internal scaling improved)
+  // Spawn enemies loop
   if (Game.spawnIntervalId) clearInterval(Game.spawnIntervalId)
   Game.spawnIntervalId = setInterval(spawnEnemies, 1000)
 
@@ -183,7 +183,7 @@ function start() {
     if (event.key === 'ArrowLeft') Game.player.isMovingLeft = true
     if (event.key === 'ArrowRight') Game.player.isMovingRight = true
     if (event.key === ' ') { Game.player.isShooting = true; preventSpaceScroll(event) }
-    if (event.key === 's') Game.sound = !Game.sound
+    if (event.key === 's') toggleSound()
     if (event.key === 'r') restart()
     if (event.key === 'p') togglePause()
 
@@ -241,8 +241,8 @@ function setupOptionsMenu() {
   const pauseBtn = document.getElementById('pause-btn')
 
   // Sound button
-  soundBtn.addEventListener('touchstart', (e) => { preventDefaults(e); Game.sound = !Game.sound })
-  soundBtn.addEventListener('click', (e) => { preventDefaults(e); Game.sound = !Game.sound })
+  soundBtn.addEventListener('touchstart', (e) => { preventDefaults(e); toggleSound() })
+  soundBtn.addEventListener('click', (e) => { preventDefaults(e); toggleSound() })
 
   // Restart button
   restartBtn.addEventListener('touchstart', (e) => { preventDefaults(e); restart() })
@@ -305,6 +305,10 @@ function togglePause() {
     Game.lastFrameTime = performance.now()
     Game.frameId = requestAnimationFrame(gameLoop)
   }
+}
+
+function toggleSound() {
+  Game.sound = !Game.sound
 }
 
 function spawnEnemies() {
