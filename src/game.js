@@ -1,42 +1,29 @@
 const Game = {
   canvas: null,
   ctx: null,
-
-  // Logical (CSS) size used by game logic; canvas is scaled for HiDPI.
   width: 0,
   height: 0,
   dpr: 1,
-
   sound: true,
-  musicStarted: false,
-
   player: null,
   enemies: [],
   bullets: [],
-
-  // simple particles for hit feedback (optional visuals)
   particles: [],
-
   score: 0,
   newMaxScore: false,
   gameOver: false,
   gameOverSfxPlayed: false,
   paused: false,
-
   backgroundImage: new Image(),
   backgroundY: 0,
-  backgroundSpeed: 140, // px/s (was 1px/frame)
-
-  interval: 0,          // difficulty timer “ticks”
-  lastFrameTime: 0,     // for dt
-  frameId: 0,           // rAF id
-  spawnIntervalId: 0,   // setInterval id
-
+  backgroundSpeed: 140,
+  interval: 0,
+  lastFrameTime: 0,
+  frameId: 0,
+  spawnIntervalId: 0,
   font: 'Press Start 2P',
   playerImage: new Image()
 }
-
-function clamp(v, a, b) { return Math.max(a, Math.min(b, v)) }
 
 class Player {
   constructor() {
@@ -177,7 +164,7 @@ function start() {
   Game.canvas = document.getElementById('game')
   Game.ctx = Game.canvas.getContext('2d')
 
-  // Make canvas responsive & crisp
+  // Make canvas responsivea
   resizeCanvas()
   window.addEventListener('resize', resizeCanvas, { passive: true })
 
@@ -193,27 +180,27 @@ function start() {
   Game.spawnIntervalId = setInterval(spawnEnemies, 1000)
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowLeft' || event.key === 'a') Game.player.isMovingLeft = true
-    if (event.key === 'ArrowRight' || event.key === 'd') Game.player.isMovingRight = true
+    if (event.key === 'ArrowLeft') Game.player.isMovingLeft = true
+    if (event.key === 'ArrowRight') Game.player.isMovingRight = true
     if (event.key === ' ') { Game.player.isShooting = true; preventSpaceScroll(event) }
-    if (event.key === 's') updateSoundButton()
+    if (event.key === 's') Game.sound = !Game.sound
     if (event.key === 'r') restart()
     if (event.key === 'p') togglePause()
 
-    // Start music on first input
-    if (!Game.musicStarted) { Game.musicStarted = true; play('soundtrack', 0.25) }
+    play("soundtrack", 0.25)
   })
 
   document.addEventListener('keyup', (event) => {
-    if (event.key === 'ArrowLeft' || event.key === 'a') Game.player.isMovingLeft = false
-    if (event.key === 'ArrowRight' || event.key === 'd') Game.player.isMovingRight = false
+    if (event.key === 'ArrowLeft') Game.player.isMovingLeft = false
+    if (event.key === 'ArrowRight') Game.player.isMovingRight = false
     if (event.key === ' ') Game.player.isShooting = false
   })
 
   // Configure controls for mobile devices
   setupMobileControls()
+
+  // Setup options menu
   setupOptionsMenu()
-  updateSoundButton()
 
   // Start game loop (delta time)
   Game.lastFrameTime = performance.now()
@@ -251,14 +238,19 @@ function resizeCanvas() {
 function setupOptionsMenu() {
   const soundBtn = document.getElementById('sound-btn')
   const restartBtn = document.getElementById('restart-btn')
+  const pauseBtn = document.getElementById('pause-btn')
 
   // Sound button
-  soundBtn.addEventListener('touchstart', (e) => { preventDefaults(e); updateSoundButton() })
-  soundBtn.addEventListener('click', (e) => { preventDefaults(e); updateSoundButton() })
+  soundBtn.addEventListener('touchstart', (e) => { preventDefaults(e); Game.sound = !Game.sound })
+  soundBtn.addEventListener('click', (e) => { preventDefaults(e); Game.sound = !Game.sound })
 
   // Restart button
   restartBtn.addEventListener('touchstart', (e) => { preventDefaults(e); restart() })
   restartBtn.addEventListener('click', (e) => { preventDefaults(e); restart() })
+
+  // Pause button
+  restartBtn.addEventListener('touchstart', (e) => { preventDefaults(e); togglePause()() })
+  restartBtn.addEventListener('click', (e) => { preventDefaults(e); togglePause()() })
 }
 
 function setupMobileControls() {
@@ -289,34 +281,21 @@ function setupMobileControls() {
 }
 
 // Prevent default touch/scroll behaviors
-function preventDefaults(e) { e.preventDefault(); e.stopPropagation() }
-function preventSpaceScroll(e) { if (e.target === document.body) e.preventDefault() }
+function preventDefaults(e) {
+  e.preventDefault();
+  e.stopPropagation();
+}
 
-function updateSoundButton() {
-  Game.sound = !Game.sound
-  const soundBtn = document.getElementById('sound-btn')
-  const icon = soundBtn.querySelector('.icon')
-  icon.textContent = Game.sound ? '🔈' : '🔇'
+function preventSpaceScroll(e) {
+  if (e.target === document.body) e.preventDefault()
+}
 
-  // Update soundtrack volume live (if present)
-  const music = document.getElementById('soundtrack')
-  if (music) music.volume = Game.sound ? 0.25 : 0
+function clamp(v, a, b) {
+  return Math.max(a, Math.min(b, v))
 }
 
 function restart() {
-  // Clean reset without full page reload
-  Game.enemies.length = 0
-  Game.bullets.length = 0
-  Game.particles.length = 0
-  Game.score = 0
-  Game.interval = 0
-  Game.backgroundY = 0
-  Game.gameOver = false
-  Game.gameOverSfxPlayed = false
-  Game.newMaxScore = false
-  Game.player = new Player()
-  if (!Game.spawnIntervalId) Game.spawnIntervalId = setInterval(spawnEnemies, 1000)
-  if (!Game.musicStarted) { Game.musicStarted = true; play('soundtrack', 0.25) }
+  location.reload()
 }
 
 function togglePause() {
@@ -350,23 +329,19 @@ function randomInt(min, max) {
 }
 
 function randomColor() {
-  // brighter palette for visibility
-  const r = randomInt(160, 255)
-  const g = randomInt(80,  210)
-  const b = randomInt(160, 255)
-  return `rgb(${r},${g},${b})`
+  return `#${Math.floor(Math.random()*16777215).toString(16)}`
 }
 
 function play(sound, volume = 0.2) {
   const audio = document.getElementById(sound)
-  if (!audio) return
+
   audio.volume = Game.sound ? volume : 0
   if (!audio.loop) audio.currentTime = 0
-  // Allow play() to be called repeatedly for looping audio without restarting
-  if (audio.paused) audio.play().catch(() => {})
+
+  audio.play()
 }
 
-function rectsOverlap(a, b) {
+function collision(a, b) {
   return (a.x < b.x + b.width &&
           a.x + a.width > b.x &&
           a.y < b.y + b.height &&
@@ -386,7 +361,7 @@ function update(dt) {
     for (let ei = 0; ei < Game.enemies.length; ei++) {
       const e = Game.enemies[ei]
       if (!e.active) continue
-      if (rectsOverlap(b, e)) {
+      if (collision(b, e)) {
         b.active = false
         e.active = false
         Game.score += 10
@@ -400,7 +375,7 @@ function update(dt) {
   // Player–Enemy collisions
   for (const e of Game.enemies) {
     if (!e.active) continue
-    if (rectsOverlap(
+    if (collision(
       { x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height },
       e
     )) {
@@ -451,7 +426,7 @@ function render() {
   ctx.fillText(`Score ${Game.score}  Record ${maxScore}`, 20, 50)
 
   // Lives
-  ctx.font = `18px '${Game.font}'`
+  ctx.font = `15px '${Game.font}'`
   ctx.fillText(`Lives: ${Game.player.lives}`, 20, 80)
 
   // Notify new record achieved
@@ -460,7 +435,7 @@ function render() {
     Game.newMaxScore = true
   }
 
-  // GAME OVER overlay (and write best once)
+  // GAME OVER
   if (Game.gameOver) {
     if (!Game.gameOverSfxPlayed) {
       play('explosion')
@@ -488,7 +463,7 @@ function render() {
     ctx.fillStyle = 'rgba(0,0,0,0.4)'
     ctx.fillRect(0, 0, Game.width, Game.height)
     ctx.fillStyle = 'white'
-    ctx.font = `54px '${Game.font}'`
+    ctx.font = `50px '${Game.font}'`
     const txt = 'PAUSED'
     const m = ctx.measureText(txt)
     ctx.fillText(txt, (Game.width - m.width) / 2, Game.height / 2)
