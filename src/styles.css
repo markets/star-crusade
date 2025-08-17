@@ -61,10 +61,6 @@ canvas {
   gap: 5px;
 }
 
-.control-item .icon {
-  display: inline;
-}
-
 #footer {
   font-size: 0.7em;
   margin-top: 30px;
