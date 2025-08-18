@@ -195,8 +195,8 @@ class Bullet {
 
 class EnemyBullet {
   constructor(x, y, speed) {
-    this.width = 8
-    this.height = 8
+    this.width = 10
+    this.height = 10
     this.x = x - this.width / 2
     this.y = y
     this.speed = speed // px/s
