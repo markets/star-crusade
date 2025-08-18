@@ -61,6 +61,7 @@ canvas {
 #footer {
   font-size: 0.6em;
   margin-top: 40px;
+  padding: 0 1em;
 }
 
 .movement-controls {
