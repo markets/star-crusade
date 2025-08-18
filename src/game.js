@@ -11,6 +11,7 @@ const Game = {
   player: null,
   enemies: [],
   bullets: [],
+  enemyBullets: [],
   particles: [],
   score: 0,
   newMaxScore: false,
@@ -138,6 +139,9 @@ class Enemy {
     this.speed = speed // px/s
     this.color = randomColor()
     this.active = true
+    this.fireCooldown = 0 // seconds
+    this.fireRate = randomInt(20, 100) / 100 // 0.2 to 1.0 bullets per second
+    this.canShoot = Math.random() < 0.3 // 30% chance this enemy can shoot
   }
 
   update(dt) {
@@ -145,6 +149,17 @@ class Enemy {
     this.y += this.speed * dt
     if (this.y > Game.height) {
       this.active = false
+      return
+    }
+
+    // Shooting logic (only if enemy is visible and can shoot)
+    if (this.canShoot && this.y > 0 && this.y < Game.height - this.height) {
+      this.fireCooldown = Math.max(0, this.fireCooldown - dt)
+      if (this.fireCooldown === 0) {
+        this.fireCooldown = 1 / this.fireRate
+        const bulletSpeed = this.speed + randomInt(100, 200) // enemy speed + delta
+        Game.enemyBullets.push(new EnemyBullet(this.x + this.width / 2, this.y + this.height, bulletSpeed))
+      }
     }
   }
 
@@ -174,6 +189,29 @@ class Bullet {
   render() {
     if (!this.active) return
     Game.ctx.fillStyle = 'white'
+    Game.ctx.fillRect(this.x, this.y, this.width, this.height)
+  }
+}
+
+class EnemyBullet {
+  constructor(x, y, speed) {
+    this.width = 10
+    this.height = 10
+    this.x = x - this.width / 2
+    this.y = y
+    this.speed = speed // px/s
+    this.active = true
+  }
+
+  update(dt) {
+    if (!this.active) return
+    this.y += this.speed * dt
+    if (this.y > Game.height) this.active = false
+  }
+
+  render() {
+    if (!this.active) return
+    Game.ctx.fillStyle = 'red'
     Game.ctx.fillRect(this.x, this.y, this.width, this.height)
   }
 }
@@ -293,6 +331,7 @@ function update(dt) {
   Game.player.update(dt)
   Game.enemies.forEach((e) => e.update(dt))
   Game.bullets.forEach((b) => b.update(dt))
+  Game.enemyBullets.forEach((b) => b.update(dt))
   Game.particles.forEach((p) => p.update(dt))
 
   // Bullet–Enemy collisions
@@ -313,6 +352,21 @@ function update(dt) {
     }
   }
 
+  // Enemy Bullet–Player collisions
+  for (let bi = 0; bi < Game.enemyBullets.length; bi++) {
+    const b = Game.enemyBullets[bi]
+    if (!b.active) continue
+    if (collision(b, { x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height })) {
+      b.active = false
+      spawnHitParticles(Game.player.x + Game.player.width / 2, Game.player.y + Game.player.height / 2, 8)
+      Game.player.hit()
+      if (Game.player.lives <= 0) {
+        Game.gameOver = true
+      }
+      break
+    }
+  }
+
   // Player–Enemy collisions
   for (const e of Game.enemies) {
     if (!e.active) continue
@@ -329,6 +383,7 @@ function update(dt) {
 
   // Cleanup inactive objects
   Game.bullets = Game.bullets.filter(b => b.active)
+  Game.enemyBullets = Game.enemyBullets.filter(b => b.active)
   Game.enemies = Game.enemies.filter(e => e.active)
   Game.particles = Game.particles.filter(p => p.active)
 
@@ -359,6 +414,7 @@ function render() {
   Game.player.render()
   Game.enemies.forEach((e) => e.render())
   Game.bullets.forEach((b) => b.render())
+  Game.enemyBullets.forEach((b) => b.render())
   Game.particles.forEach((p) => p.render())
 
   // HUD
