@@ -44,9 +44,9 @@ function randomInt(min, max) {
 
 function randomColor() {
   // Generate bright colors, avoid black/dark colors
-  const r = Math.floor(Math.random() * 156) + 100 // 100-255
-  const g = Math.floor(Math.random() * 156) + 100 // 100-255  
-  const b = Math.floor(Math.random() * 156) + 100 // 100-255
+  const r = Math.floor(Math.random() * 156) + 100
+  const g = Math.floor(Math.random() * 156) + 100
+  const b = Math.floor(Math.random() * 156) + 100
   return `rgb(${r},${g},${b})`
 }
 
@@ -534,7 +534,7 @@ function start() {
   // Load images
   Game.backgroundImage.src = 'assets/background.jpeg'
   Game.playerImage.src = 'assets/ship.png'
-  
+
   // Create player
   Game.player = new Player()
 
