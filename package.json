@@ -1,27 +1,9 @@
 {
-  "name": "star-crusade",
-  "version": "1.0.0",
-  "description": "A retro-style space shooter game with HTML5 Canvas and 8-bit space invader enemies",
-  "main": "src/index.html",
+  "private": true,
   "scripts": {
-    "start": "http-server src -p 8080 -c-1",
-    "dev": "http-server src -p 8080 -c-1 -o"
+    "start": "http-server src -p 8080"
   },
-  "keywords": [
-    "game",
-    "space-shooter",
-    "retro",
-    "8-bit",
-    "html5",
-    "canvas",
-    "space-invaders"
-  ],
-  "author": "@markets",
-  "license": "MIT",
   "devDependencies": {
     "http-server": "^14.1.1"
-  },
-  "engines": {
-    "node": ">=14.0.0"
   }
 }

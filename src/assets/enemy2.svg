@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-  <!-- Space Invader Variant design - clean rectangles -->
   <g fill="#PLACEHOLDER_COLOR" stroke="none" shape-rendering="crispEdges">
     <!-- Top spikes -->
     <rect x="12" y="2" width="2" height="6"/>
@@ -33,13 +32,12 @@
     <rect x="34" y="44" width="8" height="4"/>
   </g>
   
-  <!-- Eyes and mouth as separate contrasting elements -->
   <g fill="#EYE_COLOR" stroke="none" shape-rendering="crispEdges">
-    <!-- Eyes (larger and different shape) -->
+    <!-- Eyes -->
     <rect x="12" y="14" width="6" height="6"/>
     <rect x="32" y="14" width="6" height="6"/>
     
-    <!-- Mouth/center -->
+    <!-- Mouth -->
     <rect x="22" y="16" width="6" height="2"/>
   </g>
 </svg>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-  <!-- Classic Space Invader design - clean solid rectangles -->
   <g fill="#PLACEHOLDER_COLOR" stroke="none" shape-rendering="crispEdges">
     <!-- Top antenna -->
     <rect x="18" y="2" width="2" height="4"/>
@@ -32,7 +31,6 @@
     <rect x="46" y="36" width="4" height="4"/>
   </g>
   
-  <!-- Eyes with contrasting color -->
   <g fill="#EYE_COLOR" stroke="none" shape-rendering="crispEdges">
     <rect x="14" y="10" width="4" height="4"/>
     <rect x="32" y="10" width="4" height="4"/>

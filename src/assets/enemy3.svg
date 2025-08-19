@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-  <!-- Space Invader Spike Variant design - clean rectangles -->
   <g fill="#PLACEHOLDER_COLOR" stroke="none" shape-rendering="crispEdges">
     <!-- Top center spike -->
     <rect x="24" y="0" width="2" height="8"/>
@@ -38,9 +37,7 @@
     <rect x="30" y="40" width="12" height="4"/>
   </g>
   
-  <!-- Eyes as contrasting elements -->
   <g fill="#EYE_COLOR" stroke="none" shape-rendering="crispEdges">
-    <!-- Eyes (small and square) -->
     <rect x="16" y="14" width="2" height="2"/>
     <rect x="32" y="14" width="2" height="2"/>
   </g>

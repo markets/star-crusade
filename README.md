@@ -10,32 +10,8 @@ Are you ready to embark on the journey?
 
 ## Run it locally
 
-### Quick Start with Node.js (Recommended)
-
 1. Clone, fork or download this repository
-2. Install Node.js (version 14 or higher)
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Start the development server:
-   ```bash
-   npm start
-   ```
-5. Open your browser and go to `http://localhost:8080`
+2. Install dependencies: `npm install`
+3. Start the development server: `npm start`
+5. Open your browser and go to [localhost:8080](http://localhost:8080)
 6. Enjoy 🔫
-
-### Alternative: Direct Browser Access
-
-**Note:** Due to CORS restrictions with SVG files, this method may not work properly in modern browsers.
-
-1. Clone, fork or download this repository
-2. Open the `src/index.html` file directly in your browser
-3. Some features may not work due to CORS limitations
-
-### Development
-
-- `npm start` - Start the server on port 8080
-- `npm run dev` - Start the server and automatically open your browser
-
-The game features three distinct retro-style space invader variants rendered as SVG files for crisp, scalable graphics.

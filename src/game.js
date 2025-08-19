@@ -27,8 +27,7 @@ const Game = {
   spawnIntervalId: 0,
   font: 'Press Start 2P',
   playerImage: new Image(),
-  enemyTemplates: ['assets/enemy1-invader.svg', 'assets/enemy2-invader.svg', 'assets/enemy3-invader.svg'],
-  enemySvgCache: {} // Cache for loaded SVG content
+  enemyTemplates: ['assets/enemy1.svg', 'assets/enemy2.svg', 'assets/enemy3.svg'],
 }
 
 // ============================================
@@ -158,18 +157,10 @@ class Enemy {
   createColoredImage() {
     const svgPath = Game.enemyTemplates[this.templateIndex]
     
-    // Check if SVG is already cached
-    if (Game.enemySvgCache[svgPath]) {
-      this.generateImageFromSvg(Game.enemySvgCache[svgPath])
-      return
-    }
-    
     // Load SVG file
     fetch(svgPath)
       .then(response => response.text())
       .then(svgText => {
-        // Cache the SVG content
-        Game.enemySvgCache[svgPath] = svgText
         this.generateImageFromSvg(svgText)
       })
       .catch(error => {
@@ -193,7 +184,6 @@ class Enemy {
       // Replace placeholder colors
       const bodyElements = svgElement.querySelectorAll('[fill="#PLACEHOLDER_COLOR"]')
       bodyElements.forEach(el => el.setAttribute('fill', this.color))
-      
       const eyeElements = svgElement.querySelectorAll('[fill="#EYE_COLOR"]')
       eyeElements.forEach(el => el.setAttribute('fill', eyeColor))
       
@@ -231,17 +221,8 @@ class Enemy {
 
   render() {
     if (!this.active) return
-    
-    const ctx = Game.ctx
-    
-    if (this.coloredImage && this.coloredImage.complete) {
-      // Draw the colored SVG image
-      ctx.drawImage(this.coloredImage, this.x, this.y, this.width, this.height)
-    } else {
-      // Fallback to rectangle if image not loaded
-      ctx.fillStyle = this.color
-      ctx.fillRect(this.x, this.y, this.width, this.height)
-    }
+
+    Game.ctx.drawImage(this.coloredImage, this.x, this.y, this.width, this.height)
   }
 }
 
@@ -393,11 +374,11 @@ function spawnEnemies() {
   // Difficulty scaling by elapsed "intervals"
   let maxEnemies = Math.round(clamp(Game.interval / 10, 1, 40))
   let maxSpeed = clamp(120 + Game.interval * 10, 120, 600) // px/s
-  let maxSize = clamp(20 + Game.interval * 5, 25, 80) // Reduced max size significantly
+  let maxSize = clamp(20 + Game.interval * 5, 25, 120)
 
   for (let i = 0; i < maxEnemies; i++) {
     const speed = randomInt(80, maxSpeed)
-    const size = randomInt(20, maxSize) // Reduced minimum size
+    const size = randomInt(30, maxSize)
     Game.enemies.push(new Enemy(speed, size))
   }
 }
@@ -563,7 +544,6 @@ function start() {
   // Load images
   Game.backgroundImage.src = 'assets/background.jpeg'
   Game.playerImage.src = 'assets/ship.png'
-  // Enemy SVGs are now loaded dynamically from separate files
   
   // Create player
   Game.player = new Player()
