@@ -32,12 +32,10 @@
     <rect x="34" y="44" width="8" height="4"/>
   </g>
   
-  <g fill="#EYE_COLOR" stroke="none" shape-rendering="crispEdges">
-    <!-- Eyes -->
+  <!-- Eyes/mouth -->
+  <g stroke="none" shape-rendering="crispEdges">
     <rect x="12" y="14" width="6" height="6"/>
     <rect x="32" y="14" width="6" height="6"/>
-    
-    <!-- Mouth -->
     <rect x="22" y="16" width="6" height="2"/>
   </g>
 </svg>

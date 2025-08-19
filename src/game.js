@@ -27,7 +27,8 @@ const Game = {
   spawnIntervalId: 0,
   font: 'Press Start 2P',
   playerImage: new Image(),
-  enemyTemplates: ['assets/enemy1.svg', 'assets/enemy2.svg', 'assets/enemy3.svg']
+  enemyTemplates: ['assets/enemy1.svg', 'assets/enemy2.svg', 'assets/enemy3.svg'],
+  enemySvgCache: {}
 }
 
 // ============================================
@@ -156,38 +157,44 @@ class Enemy {
 
   createColoredImage() {
     const svgPath = Game.enemyTemplates[this.templateIndex]
-    
+
+    // Check if SVG is already cached
+    if (Game.enemySvgCache[svgPath]) {
+      this.generateImageFromSvg(Game.enemySvgCache[svgPath])
+      return
+    }
+
     // Load SVG file
     fetch(svgPath)
       .then(response => response.text())
       .then(svgText => {
-        // Parse SVG text
-        const parser = new DOMParser()
-        const svgDoc = parser.parseFromString(svgText, 'image/svg+xml')
-        const svgElement = svgDoc.documentElement
-
-        // Calculate eye color based on body color brightness
-        const rgb = this.color.match(/\d+/g).map(Number)
-        const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
-        const eyeColor = brightness > 150 ? '#000000' : '#FFFFFF'
-
-        // Replace placeholder colors
-        const bodyElements = svgElement.querySelectorAll('[fill="#PLACEHOLDER_COLOR"]')
-        bodyElements.forEach(el => el.setAttribute('fill', this.color))
-        const eyeElements = svgElement.querySelectorAll('[fill="#EYE_COLOR"]')
-        eyeElements.forEach(el => el.setAttribute('fill', eyeColor))
-
-        // Convert SVG to data URL
-        const svgData = new XMLSerializer().serializeToString(svgElement)
-        const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgData)
-
-        // Create image from data URL
-        this.coloredImage = new Image()
-        this.coloredImage.src = dataUrl
-      }).catch(error => {
+        // Cache the SVG content
+        Game.enemySvgCache[svgPath] = svgText
+        this.generateImageFromSvg(svgText)
+      })
+      .catch(error => {
         console.warn('Failed to load enemy SVG:', svgPath, error)
         this.coloredImage = null
       })
+  }
+
+  generateImageFromSvg(svgText) {
+    // Parse SVG text
+    const parser = new DOMParser()
+    const svgDoc = parser.parseFromString(svgText, 'image/svg+xml')
+    const svgElement = svgDoc.documentElement
+
+    // Apply color
+    const bodyElements = svgElement.querySelectorAll('[fill="#PLACEHOLDER_COLOR"]')
+    bodyElements.forEach(el => el.setAttribute('fill', this.color))
+
+    // Convert SVG to data URL
+    const svgData = new XMLSerializer().serializeToString(svgElement)
+    const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgData)
+
+    // Create image from data URL
+    this.coloredImage = new Image()
+    this.coloredImage.src = dataUrl
   }
 
   update(dt) {
@@ -211,7 +218,9 @@ class Enemy {
 
   render() {
     if (!this.active) return
-    Game.ctx.drawImage(this.coloredImage, this.x, this.y, this.width, this.height)
+    if (this.coloredImage && this.coloredImage.complete) {
+      Game.ctx.drawImage(this.coloredImage, this.x, this.y, this.width, this.height)
+    }
   }
 }
 

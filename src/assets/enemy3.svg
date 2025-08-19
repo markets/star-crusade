@@ -37,7 +37,8 @@
     <rect x="30" y="40" width="12" height="4"/>
   </g>
   
-  <g fill="#EYE_COLOR" stroke="none" shape-rendering="crispEdges">
+  <!-- Eyes -->
+  <g stroke="none" shape-rendering="crispEdges">
     <rect x="16" y="14" width="2" height="2"/>
     <rect x="32" y="14" width="2" height="2"/>
   </g>
