@@ -143,8 +143,8 @@ class Player {
   }
 
   render() {
-    // Blink when invulnerable from collision
-    if (this.invuln > 0 && Math.floor(performance.now() / 100) % 2 === 0) return
+    // Blink when invulnerable from collision or shield power-up
+    if ((this.invuln > 0 || this.shieldTimer > 0) && Math.floor(performance.now() / 100) % 2 === 0) return
     Game.ctx.drawImage(Game.playerImage, this.x, this.y, this.width, this.height)
   }
 
