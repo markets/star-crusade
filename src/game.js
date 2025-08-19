@@ -647,17 +647,17 @@ function render() {
   let uiLine = 90
   if (Game.player.shieldTimer > 0) {
     ctx.font = `12px '${Game.font}'`
-    ctx.fillText(`Shield: ${Math.ceil(Game.player.shieldTimer)}s`, 20, uiLine)
+    ctx.fillText(`🛡️ ${Math.ceil(Game.player.shieldTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.doubleShootTimer > 0) {
     ctx.font = `12px '${Game.font}'`
-    ctx.fillText(`Double Shoot: ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
+    ctx.fillText(`🔫🔫 ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.bombs > 0) {
     ctx.font = `12px '${Game.font}'`
-    ctx.fillText(`Bombs: ${Game.player.bombs}`, 20, uiLine)
+    ctx.fillText(`💣 ${Game.player.bombs}`, 20, uiLine)
   }
 
   // Notify new record achieved
