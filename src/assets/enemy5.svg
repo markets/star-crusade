@@ -39,8 +39,8 @@
     <rect x="48" y="20" width="2" height="2"/>
   </g>
   
-  <!-- Cockpit windows/lights -->
-  <g stroke="none" shape-rendering="crispEdges">
+  <!-- Cockpit windows -->
+  <g fill="black" stroke="none" shape-rendering="crispEdges">
     <rect x="18" y="12" width="2" height="2"/>
     <rect x="22" y="8" width="2" height="2"/>
     <rect x="26" y="8" width="2" height="2"/>
