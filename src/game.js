@@ -43,7 +43,11 @@ function randomInt(min, max) {
 }
 
 function randomColor() {
-  return `#${Math.floor(Math.random()*16777215).toString(16)}`
+  // Generate bright colors, avoid black/dark colors
+  const r = Math.floor(Math.random() * 156) + 100 // 100-255
+  const g = Math.floor(Math.random() * 156) + 100 // 100-255  
+  const b = Math.floor(Math.random() * 156) + 100 // 100-255
+  return `rgb(${r},${g},${b})`
 }
 
 function collision(a, b) {
@@ -344,11 +348,11 @@ function spawnEnemies() {
   // Difficulty scaling by elapsed "intervals"
   let maxEnemies = Math.round(clamp(Game.interval / 10, 1, 40))
   let maxSpeed = clamp(120 + Game.interval * 10, 120, 600) // px/s
-  let maxSize = clamp(40 + Game.interval * 10, 50, 200)
+  let maxSize = clamp(20 + Game.interval * 5, 25, 80) // Reduced max size significantly
 
   for (let i = 0; i < maxEnemies; i++) {
     const speed = randomInt(80, maxSpeed)
-    const size = randomInt(30, maxSize)
+    const size = randomInt(20, maxSize) // Reduced minimum size
     Game.enemies.push(new Enemy(speed, size))
   }
 }
@@ -518,8 +522,7 @@ function start() {
   // Load enemy SVG data
   const enemySvgFiles = [
     'assets/enemy1-invader.svg',
-    'assets/enemy2-ufo.svg', 
-    'assets/enemy3-asteroid.svg'
+    'assets/enemy2-invader-variant.svg'
   ]
   
   // Load SVG data using fetch
