@@ -157,8 +157,15 @@ class Enemy {
   createColoredImage() {
     if (!Game.enemySvgData[this.svgIndex]) return
     
-    // Create a colored version of the SVG
-    const coloredSvg = Game.enemySvgData[this.svgIndex].replace('#PLACEHOLDER_COLOR', this.color)
+    // Create a colored version of the SVG with contrasting eyes
+    let coloredSvg = Game.enemySvgData[this.svgIndex].replace('#PLACEHOLDER_COLOR', this.color)
+    
+    // Replace eye color with a contrasting color (black or white depending on brightness)
+    const rgb = this.color.match(/\d+/g).map(Number)
+    const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
+    const eyeColor = brightness > 150 ? '#000000' : '#FFFFFF'
+    coloredSvg = coloredSvg.replace(/#EYE_COLOR/g, eyeColor)
+    
     const dataUrl = 'data:image/svg+xml;base64,' + btoa(coloredSvg)
     
     this.coloredImage = new Image()
@@ -522,7 +529,8 @@ function start() {
   // Load enemy SVG data
   const enemySvgFiles = [
     'assets/enemy1-invader.svg',
-    'assets/enemy2-invader-variant.svg'
+    'assets/enemy2-invader-variant.svg',
+    'assets/enemy3-invader-spike.svg'
   ]
   
   // Load SVG data using fetch
