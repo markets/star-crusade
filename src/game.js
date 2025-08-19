@@ -27,7 +27,7 @@ const Game = {
   spawnIntervalId: 0,
   font: 'Press Start 2P',
   playerImage: new Image(),
-  enemyTemplates: ['assets/enemy1.svg', 'assets/enemy2.svg', 'assets/enemy3.svg'],
+  enemyTemplates: ['assets/enemy1.svg', 'assets/enemy2.svg', 'assets/enemy3.svg']
 }
 
 // ============================================
@@ -161,43 +161,33 @@ class Enemy {
     fetch(svgPath)
       .then(response => response.text())
       .then(svgText => {
-        this.generateImageFromSvg(svgText)
-      })
-      .catch(error => {
+        // Parse SVG text
+        const parser = new DOMParser()
+        const svgDoc = parser.parseFromString(svgText, 'image/svg+xml')
+        const svgElement = svgDoc.documentElement
+
+        // Calculate eye color based on body color brightness
+        const rgb = this.color.match(/\d+/g).map(Number)
+        const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
+        const eyeColor = brightness > 150 ? '#000000' : '#FFFFFF'
+
+        // Replace placeholder colors
+        const bodyElements = svgElement.querySelectorAll('[fill="#PLACEHOLDER_COLOR"]')
+        bodyElements.forEach(el => el.setAttribute('fill', this.color))
+        const eyeElements = svgElement.querySelectorAll('[fill="#EYE_COLOR"]')
+        eyeElements.forEach(el => el.setAttribute('fill', eyeColor))
+
+        // Convert SVG to data URL
+        const svgData = new XMLSerializer().serializeToString(svgElement)
+        const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgData)
+
+        // Create image from data URL
+        this.coloredImage = new Image()
+        this.coloredImage.src = dataUrl
+      }).catch(error => {
         console.warn('Failed to load enemy SVG:', svgPath, error)
         this.coloredImage = null
       })
-  }
-  
-  generateImageFromSvg(svgText) {
-    try {
-      // Parse SVG text
-      const parser = new DOMParser()
-      const svgDoc = parser.parseFromString(svgText, 'image/svg+xml')
-      const svgElement = svgDoc.documentElement
-      
-      // Calculate eye color based on body color brightness
-      const rgb = this.color.match(/\d+/g).map(Number)
-      const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
-      const eyeColor = brightness > 150 ? '#000000' : '#FFFFFF'
-      
-      // Replace placeholder colors
-      const bodyElements = svgElement.querySelectorAll('[fill="#PLACEHOLDER_COLOR"]')
-      bodyElements.forEach(el => el.setAttribute('fill', this.color))
-      const eyeElements = svgElement.querySelectorAll('[fill="#EYE_COLOR"]')
-      eyeElements.forEach(el => el.setAttribute('fill', eyeColor))
-      
-      // Convert SVG to data URL
-      const svgData = new XMLSerializer().serializeToString(svgElement)
-      const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgData)
-      
-      // Create image from data URL
-      this.coloredImage = new Image()
-      this.coloredImage.src = dataUrl
-    } catch (error) {
-      console.warn('Failed to create colored enemy image:', error)
-      this.coloredImage = null
-    }
   }
 
   update(dt) {
@@ -374,11 +364,11 @@ function spawnEnemies() {
   // Difficulty scaling by elapsed "intervals"
   let maxEnemies = Math.round(clamp(Game.interval / 10, 1, 40))
   let maxSpeed = clamp(120 + Game.interval * 10, 120, 600) // px/s
-  let maxSize = clamp(20 + Game.interval * 5, 25, 120)
+  let maxSize = clamp(40 + Game.interval * 10, 50, 100)
 
   for (let i = 0; i < maxEnemies; i++) {
     const speed = randomInt(80, maxSpeed)
-    const size = randomInt(30, maxSize)
+    const size = randomInt(40, maxSize)
     Game.enemies.push(new Enemy(speed, size))
   }
 }
