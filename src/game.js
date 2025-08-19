@@ -101,6 +101,9 @@ class Player {
     
     // Double shooting power-up
     this.doubleShootTimer = 0 // seconds of double shooting
+    
+    // Bomb power-up inventory
+    this.bombs = 0 // number of bombs player has
   }
 
   update(dt) {
@@ -150,6 +153,41 @@ class Player {
     if (this.lives <= 0) {
       Game.gameOver = true
     }
+  }
+
+  useBomb() {
+    if (this.bombs <= 0) return false
+    
+    this.bombs -= 1
+    
+    // Kill all enemies on screen
+    Game.enemies.forEach(enemy => {
+      if (enemy.active) {
+        enemy.active = false
+        Game.score += 10 // Give points for each enemy killed
+        // Spawn particles for each destroyed enemy
+        spawnHitParticles(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, 15)
+      }
+    })
+    
+    // Remove all enemy bullets
+    Game.enemyBullets.forEach(bullet => {
+      bullet.active = false
+    })
+    
+    // Play explosion sound
+    play('explosion')
+    
+    // Create screen-wide explosion effect
+    for (let i = 0; i < 50; i++) {
+      const x = Math.random() * Game.width
+      const y = Math.random() * Game.height
+      const vx = (Math.random() - 0.5) * 400
+      const vy = (Math.random() - 0.5) * 400
+      Game.particles.push(new Particle(x, y, vx, vy, 0.8, 'rgba(255,100,0,1)'))
+    }
+    
+    return true
   }
 }
 
@@ -336,8 +374,17 @@ class PowerUp {
     this.y = -this.height
     this.speed = 120 // px/s, slower than enemies
     this.active = true
-    // Randomly choose power-up type: 50% shield, 50% double shoot
-    this.type = Math.random() < 0.5 ? 'shield' : 'double_shoot'
+    // Randomly choose power-up type: 25% each type
+    const rand = Math.random()
+    if (rand < 0.25) {
+      this.type = 'shield'
+    } else if (rand < 0.5) {
+      this.type = 'double_shoot'
+    } else if (rand < 0.75) {
+      this.type = 'bomb'
+    } else {
+      this.type = 'live'
+    }
   }
 
   update(dt) {
@@ -367,7 +414,7 @@ class PowerUp {
       // Draw shield pattern (cross)
       ctx.fillStyle = '#FFFFFF'
       ctx.fillRect(this.x + this.width * 0.4, this.y + 3, this.width * 0.2, this.height - 6)
-      ctx.fillRect(this.x + 3, this.y + this.height * 0.4, this.width - 6, this.height * 0.2)
+      ctx.fillRect(this.x + 3, this.y + this.width * 0.4, this.width - 6, this.height * 0.2)
     } else if (this.type === 'double_shoot') {
       // Draw double shoot power-up as a red/orange weapon-like shape
       // Draw outer glow
@@ -386,6 +433,50 @@ class PowerUp {
       // Right arrow  
       ctx.fillRect(this.x + this.width * 0.75, this.y + this.height * 0.3, this.width * 0.1, this.height * 0.4)
       ctx.fillRect(this.x + this.width * 0.65, this.y + this.height * 0.5, this.width * 0.3, this.height * 0.1)
+    } else if (this.type === 'bomb') {
+      // Draw bomb power-up as a dark gray/black bomb with orange/red glow
+      // Draw outer glow
+      ctx.shadowColor = '#FF6600'
+      ctx.shadowBlur = 12
+      
+      // Draw bomb body (circle)
+      ctx.fillStyle = '#333333'
+      ctx.beginPath()
+      ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.4, 0, Math.PI * 2)
+      ctx.fill()
+      
+      // Draw bomb fuse/spark
+      ctx.fillStyle = '#FF6600'
+      ctx.fillRect(this.x + this.width * 0.45, this.y + this.height * 0.1, this.width * 0.1, this.height * 0.3)
+      
+      // Draw explosion pattern
+      ctx.fillStyle = '#FFFF00'
+      ctx.beginPath()
+      ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.15, 0, Math.PI * 2)
+      ctx.fill()
+    } else if (this.type === 'live') {
+      // Draw life power-up as a bright green heart/cross
+      // Draw outer glow
+      ctx.shadowColor = '#00FF00'
+      ctx.shadowBlur = 10
+      
+      // Draw life background
+      ctx.fillStyle = '#00FF00'
+      ctx.fillRect(this.x, this.y, this.width, this.height)
+      
+      // Draw heart/cross pattern
+      ctx.fillStyle = '#FFFFFF'
+      // Vertical line
+      ctx.fillRect(this.x + this.width * 0.4, this.y + 3, this.width * 0.2, this.height - 6)
+      // Horizontal line
+      ctx.fillRect(this.x + 3, this.y + this.height * 0.4, this.width - 6, this.height * 0.2)
+      
+      // Add small hearts in corners
+      ctx.fillStyle = '#FF0000'
+      ctx.fillRect(this.x + 2, this.y + 2, 4, 4)
+      ctx.fillRect(this.x + this.width - 6, this.y + 2, 4, 4)
+      ctx.fillRect(this.x + 2, this.y + this.height - 6, 4, 4)
+      ctx.fillRect(this.x + this.width - 6, this.y + this.height - 6, 4, 4)
     }
     
     ctx.restore()
@@ -563,6 +654,12 @@ function update(dt) {
       } else if (p.type === 'double_shoot') {
         // Grant 5 seconds of double shooting
         Game.player.doubleShootTimer = 5.0
+      } else if (p.type === 'bomb') {
+        // Give player a bomb
+        Game.player.bombs += 1
+      } else if (p.type === 'live') {
+        // Give player an extra life
+        Game.player.lives += 1
       }
       
       // Play achievement sound for power-up collection
@@ -630,6 +727,11 @@ function render() {
   if (Game.player.doubleShootTimer > 0) {
     ctx.font = `12px '${Game.font}'`
     ctx.fillText(`Double Shoot: ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
+    uiLine += 20
+  }
+  if (Game.player.bombs > 0) {
+    ctx.font = `12px '${Game.font}'`
+    ctx.fillText(`Bombs: ${Game.player.bombs}`, 20, uiLine)
   }
 
   // Notify new record achieved
@@ -708,6 +810,11 @@ function start() {
     if (event.key === 's') toggleSound()
     if (event.key === 'r') restart()
     if (event.key === 'p') togglePause()
+    if (event.key === 'b' || event.key === 'B') {
+      if (!Game.gameOver && !Game.paused) {
+        Game.player.useBomb()
+      }
+    }
 
     play("soundtrack", 0.25)
   })
