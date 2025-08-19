@@ -26,7 +26,9 @@ const Game = {
   frameId: 0,
   spawnIntervalId: 0,
   font: 'Press Start 2P',
-  playerImage: new Image()
+  playerImage: new Image(),
+  enemyTemplates: ['assets/enemy1.svg', 'assets/enemy2.svg', 'assets/enemy3.svg'],
+  enemySvgCache: {}
 }
 
 // ============================================
@@ -42,7 +44,11 @@ function randomInt(min, max) {
 }
 
 function randomColor() {
-  return `#${Math.floor(Math.random()*16777215).toString(16)}`
+  // Generate bright colors, avoid black/dark colors
+  const r = Math.floor(Math.random() * 156) + 100
+  const g = Math.floor(Math.random() * 156) + 100
+  const b = Math.floor(Math.random() * 156) + 100
+  return `rgb(${r},${g},${b})`
 }
 
 function collision(a, b) {
@@ -142,6 +148,53 @@ class Enemy {
     this.fireCooldown = 0 // seconds
     this.fireRate = randomInt(20, 100) / 100 // 0.2 to 1.0 bullets per second
     this.canShoot = Math.random() < 0.3 // 30% chance this enemy can shoot
+    
+    // Select a random enemy template type
+    this.templateIndex = Math.floor(Math.random() * Game.enemyTemplates.length)
+    this.coloredImage = null
+    this.createColoredImage()
+  }
+
+  createColoredImage() {
+    const svgPath = Game.enemyTemplates[this.templateIndex]
+
+    // Check if SVG is already cached
+    if (Game.enemySvgCache[svgPath]) {
+      this.generateImageFromSvg(Game.enemySvgCache[svgPath])
+      return
+    }
+
+    // Load SVG file
+    fetch(svgPath)
+      .then(response => response.text())
+      .then(svgText => {
+        // Cache the SVG content
+        Game.enemySvgCache[svgPath] = svgText
+        this.generateImageFromSvg(svgText)
+      })
+      .catch(error => {
+        console.warn('Failed to load enemy SVG:', svgPath, error)
+        this.coloredImage = null
+      })
+  }
+
+  generateImageFromSvg(svgText) {
+    // Parse SVG text
+    const parser = new DOMParser()
+    const svgDoc = parser.parseFromString(svgText, 'image/svg+xml')
+    const svgElement = svgDoc.documentElement
+
+    // Apply color
+    const bodyElements = svgElement.querySelectorAll('[fill="#PLACEHOLDER_COLOR"]')
+    bodyElements.forEach(el => el.setAttribute('fill', this.color))
+
+    // Convert SVG to data URL
+    const svgData = new XMLSerializer().serializeToString(svgElement)
+    const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgData)
+
+    // Create image from data URL
+    this.coloredImage = new Image()
+    this.coloredImage.src = dataUrl
   }
 
   update(dt) {
@@ -165,8 +218,9 @@ class Enemy {
 
   render() {
     if (!this.active) return
-    Game.ctx.fillStyle = this.color
-    Game.ctx.fillRect(this.x, this.y, this.width, this.height)
+    if (this.coloredImage && this.coloredImage.complete) {
+      Game.ctx.drawImage(this.coloredImage, this.x, this.y, this.width, this.height)
+    }
   }
 }
 
@@ -318,11 +372,11 @@ function spawnEnemies() {
   // Difficulty scaling by elapsed "intervals"
   let maxEnemies = Math.round(clamp(Game.interval / 10, 1, 40))
   let maxSpeed = clamp(120 + Game.interval * 10, 120, 600) // px/s
-  let maxSize = clamp(40 + Game.interval * 10, 50, 200)
+  let maxSize = clamp(40 + Game.interval * 10, 50, 100)
 
   for (let i = 0; i < maxEnemies; i++) {
     const speed = randomInt(80, maxSpeed)
-    const size = randomInt(30, maxSize)
+    const size = randomInt(40, maxSize)
     Game.enemies.push(new Enemy(speed, size))
   }
 }

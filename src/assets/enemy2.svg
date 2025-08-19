@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <g fill="#PLACEHOLDER_COLOR" stroke="none" shape-rendering="crispEdges">
+    <!-- Top spikes -->
+    <rect x="12" y="2" width="2" height="6"/>
+    <rect x="24" y="2" width="2" height="4"/>
+    <rect x="36" y="2" width="2" height="6"/>
+    
+    <!-- Head -->
+    <rect x="8" y="8" width="34" height="6"/>
+    
+    <!-- Body -->
+    <rect x="4" y="20" width="42" height="10"/>
+    
+    <!-- Bottom teeth/spikes -->
+    <rect x="6" y="30" width="4" height="4"/>
+    <rect x="14" y="30" width="4" height="6"/>
+    <rect x="22" y="30" width="6" height="4"/>
+    <rect x="32" y="30" width="4" height="6"/>
+    <rect x="40" y="30" width="4" height="4"/>
+    
+    <!-- Arms -->
+    <rect x="0" y="34" width="6" height="8"/>
+    <rect x="44" y="34" width="6" height="8"/>
+    
+    <!-- Legs -->
+    <rect x="12" y="36" width="4" height="8"/>
+    <rect x="34" y="36" width="4" height="8"/>
+    
+    <!-- Feet -->
+    <rect x="8" y="44" width="8" height="4"/>
+    <rect x="34" y="44" width="8" height="4"/>
+  </g>
+  
+  <!-- Eyes/mouth -->
+  <g stroke="none" shape-rendering="crispEdges">
+    <rect x="12" y="14" width="6" height="6"/>
+    <rect x="32" y="14" width="6" height="6"/>
+    <rect x="22" y="16" width="6" height="2"/>
+  </g>
+</svg>

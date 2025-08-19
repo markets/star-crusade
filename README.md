@@ -11,5 +11,7 @@ Are you ready to embark on the journey?
 ## Run it locally
 
 1. Clone, fork or download this repository
-2. Open the `src/index.html` file in your browser
-3. Enjoy 🔫
+2. Install dependencies: `npm install`
+3. Start the development server: `npm start`
+4. Open your browser and go to [localhost:8080](http://localhost:8080)
+5. Enjoy 🔫
