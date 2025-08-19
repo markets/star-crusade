@@ -69,131 +69,66 @@ function preventSpaceScroll(e) {
 }
 
 // ============================================
-// TEXTURE GENERATION
+// GEOMETRIC SHAPES
 // ============================================
-function createStripeTexture(color, size = 20) {
-  const canvas = document.createElement('canvas')
-  canvas.width = size
-  canvas.height = size
-  const ctx = canvas.getContext('2d')
-  
-  // Create stripe pattern
+const shapeTypes = ['rectangle', 'circle', 'triangle', 'diamond', 'pentagon']
+
+function drawRectangle(ctx, x, y, width, height, color) {
   ctx.fillStyle = color
-  ctx.fillRect(0, 0, size, size)
-  
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
-  for (let i = 0; i < size; i += 4) {
-    ctx.fillRect(i, 0, 2, size)
-  }
-  
-  return ctx.createPattern(canvas, 'repeat')
+  ctx.fillRect(x, y, width, height)
 }
 
-function createDotTexture(color, size = 20) {
-  const canvas = document.createElement('canvas')
-  canvas.width = size
-  canvas.height = size
-  const ctx = canvas.getContext('2d')
-  
-  // Create dot pattern
+function drawCircle(ctx, x, y, width, height, color) {
   ctx.fillStyle = color
-  ctx.fillRect(0, 0, size, size)
-  
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'
   ctx.beginPath()
-  ctx.arc(size/4, size/4, 2, 0, Math.PI * 2)
-  ctx.arc(3*size/4, 3*size/4, 2, 0, Math.PI * 2)
+  const centerX = x + width / 2
+  const centerY = y + height / 2
+  const radius = Math.min(width, height) / 2
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
   ctx.fill()
-  
-  return ctx.createPattern(canvas, 'repeat')
 }
 
-function createCrossHatchTexture(color, size = 20) {
-  const canvas = document.createElement('canvas')
-  canvas.width = size
-  canvas.height = size
-  const ctx = canvas.getContext('2d')
-  
-  // Create cross-hatch pattern
+function drawTriangle(ctx, x, y, width, height, color) {
   ctx.fillStyle = color
-  ctx.fillRect(0, 0, size, size)
-  
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
-  ctx.lineWidth = 1
   ctx.beginPath()
-  // Diagonal lines
-  for (let i = 0; i < size * 2; i += 6) {
-    ctx.moveTo(i, 0)
-    ctx.lineTo(0, i)
-    ctx.moveTo(size, i - size)
-    ctx.lineTo(i - size, size)
-  }
-  ctx.stroke()
-  
-  return ctx.createPattern(canvas, 'repeat')
+  ctx.moveTo(x + width / 2, y) // top point
+  ctx.lineTo(x, y + height) // bottom left
+  ctx.lineTo(x + width, y + height) // bottom right
+  ctx.closePath()
+  ctx.fill()
 }
 
-function createGridTexture(color, size = 20) {
-  const canvas = document.createElement('canvas')
-  canvas.width = size
-  canvas.height = size
-  const ctx = canvas.getContext('2d')
-  
-  // Create grid pattern
+function drawDiamond(ctx, x, y, width, height, color) {
   ctx.fillStyle = color
-  ctx.fillRect(0, 0, size, size)
-  
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'
-  ctx.lineWidth = 1
   ctx.beginPath()
-  // Vertical lines
-  for (let i = 0; i < size; i += 5) {
-    ctx.moveTo(i, 0)
-    ctx.lineTo(i, size)
-  }
-  // Horizontal lines  
-  for (let i = 0; i < size; i += 5) {
-    ctx.moveTo(0, i)
-    ctx.lineTo(size, i)
-  }
-  ctx.stroke()
-  
-  return ctx.createPattern(canvas, 'repeat')
+  ctx.moveTo(x + width / 2, y) // top
+  ctx.lineTo(x + width, y + height / 2) // right
+  ctx.lineTo(x + width / 2, y + height) // bottom
+  ctx.lineTo(x, y + height / 2) // left
+  ctx.closePath()
+  ctx.fill()
 }
 
-function createZigzagTexture(color, size = 20) {
-  const canvas = document.createElement('canvas')
-  canvas.width = size
-  canvas.height = size
-  const ctx = canvas.getContext('2d')
-  
-  // Create zigzag pattern
+function drawPentagon(ctx, x, y, width, height, color) {
   ctx.fillStyle = color
-  ctx.fillRect(0, 0, size, size)
-  
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'
-  ctx.lineWidth = 2
   ctx.beginPath()
-  // Zigzag lines
-  for (let y = 0; y < size; y += 8) {
-    ctx.moveTo(0, y)
-    for (let x = 0; x < size; x += 4) {
-      ctx.lineTo(x + 2, y + (x % 8 === 0 ? 4 : -4))
+  const centerX = x + width / 2
+  const centerY = y + height / 2
+  const radius = Math.min(width, height) / 2
+  
+  for (let i = 0; i < 5; i++) {
+    const angle = (i * 2 * Math.PI / 5) - (Math.PI / 2) // start from top
+    const px = centerX + radius * Math.cos(angle)
+    const py = centerY + radius * Math.sin(angle)
+    if (i === 0) {
+      ctx.moveTo(px, py)
+    } else {
+      ctx.lineTo(px, py)
     }
   }
-  ctx.stroke()
-  
-  return ctx.createPattern(canvas, 'repeat')
+  ctx.closePath()
+  ctx.fill()
 }
-
-// Array of texture creation functions
-const textureTypes = [
-  createStripeTexture,
-  createDotTexture, 
-  createCrossHatchTexture,
-  createGridTexture,
-  createZigzagTexture
-]
 
 // ============================================
 // GAME CLASSES
@@ -270,9 +205,8 @@ class Enemy {
     this.fireRate = randomInt(20, 100) / 100 // 0.2 to 1.0 bullets per second
     this.canShoot = Math.random() < 0.3 // 30% chance this enemy can shoot
     
-    // Add texture support
-    const textureFunction = textureTypes[Math.floor(Math.random() * textureTypes.length)]
-    this.texture = textureFunction(this.color, Math.min(this.width, this.height))
+    // Add geometric shape support
+    this.shape = shapeTypes[Math.floor(Math.random() * shapeTypes.length)]
   }
 
   update(dt) {
@@ -296,8 +230,26 @@ class Enemy {
 
   render() {
     if (!this.active) return
-    Game.ctx.fillStyle = this.texture
-    Game.ctx.fillRect(this.x, this.y, this.width, this.height)
+    
+    switch (this.shape) {
+      case 'rectangle':
+        drawRectangle(Game.ctx, this.x, this.y, this.width, this.height, this.color)
+        break
+      case 'circle':
+        drawCircle(Game.ctx, this.x, this.y, this.width, this.height, this.color)
+        break
+      case 'triangle':
+        drawTriangle(Game.ctx, this.x, this.y, this.width, this.height, this.color)
+        break
+      case 'diamond':
+        drawDiamond(Game.ctx, this.x, this.y, this.width, this.height, this.color)
+        break
+      case 'pentagon':
+        drawPentagon(Game.ctx, this.x, this.y, this.width, this.height, this.color)
+        break
+      default:
+        drawRectangle(Game.ctx, this.x, this.y, this.width, this.height, this.color)
+    }
   }
 }
 
