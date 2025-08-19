@@ -365,16 +365,18 @@ class PowerUp {
     this.y = -this.height
     this.speed = 120 // px/s, slower than enemies
     this.active = true
-    // Randomly choose power-up type: 25% each type
+    // Randomly choose power-up type: 20% each type (5 types)
     const rand = Math.random()
-    if (rand < 0.25) {
+    if (rand < 0.2) {
       this.type = 'shield'
-    } else if (rand < 0.5) {
+    } else if (rand < 0.4) {
       this.type = 'double_shoot'
-    } else if (rand < 0.75) {
+    } else if (rand < 0.6) {
       this.type = 'bomb'
-    } else {
+    } else if (rand < 0.8) {
       this.type = 'live'
+    } else {
+      this.type = 'score'
     }
   }
 
@@ -389,6 +391,9 @@ class PowerUp {
   render() {
     if (!this.active) return
     
+    // Make power-ups blink
+    if (Math.floor(performance.now() / 200) % 2 === 0) return
+    
     const ctx = Game.ctx
     let emoji = ''
     
@@ -401,6 +406,8 @@ class PowerUp {
       emoji = '💣'
     } else if (this.type === 'live') {
       emoji = '♥️'
+    } else if (this.type === 'score') {
+      emoji = '🪙'
     }
     
     // Render emoji
@@ -586,6 +593,9 @@ function update(dt) {
       } else if (p.type === 'live') {
         // Give player an extra life
         Game.player.lives += 1
+      } else if (p.type === 'score') {
+        // Give player 100 extra points
+        Game.score += 100
       }
       
       // Play achievement sound for power-up collection
@@ -641,7 +651,7 @@ function render() {
 
   // Lives
   ctx.font = `15px '${Game.font}'`
-  ctx.fillText(`Lives ${Game.player.lives}`, 20, 70)
+  ctx.fillText(`♥️ ${Game.player.lives}`, 20, 70)
 
   // Show power-up status
   let uiLine = 90
