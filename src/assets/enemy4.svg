@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <g fill="#PLACEHOLDER_COLOR" stroke="none" shape-rendering="crispEdges">
+    <!-- Top claws/pincers -->
+    <rect x="8" y="4" width="4" height="6"/>
+    <rect x="38" y="4" width="4" height="6"/>
+    
+    <!-- Upper body segments -->
+    <rect x="14" y="8" width="22" height="4"/>
+    <rect x="10" y="12" width="30" height="6"/>
+    
+    <!-- Main body core -->
+    <rect x="12" y="18" width="26" height="8"/>
+    
+    <!-- Mid-section details -->
+    <rect x="8" y="20" width="4" height="4"/>
+    <rect x="38" y="20" width="4" height="4"/>
+    
+    <!-- Lower body -->
+    <rect x="16" y="26" width="18" height="4"/>
+    
+    <!-- Multiple legs - spider-like -->
+    <rect x="2" y="30" width="6" height="2"/>
+    <rect x="10" y="32" width="6" height="2"/>
+    <rect x="18" y="34" width="6" height="2"/>
+    <rect x="26" y="34" width="6" height="2"/>
+    <rect x="34" y="32" width="6" height="2"/>
+    <rect x="42" y="30" width="6" height="2"/>
+    
+    <!-- Lower leg segments -->
+    <rect x="0" y="32" width="4" height="4"/>
+    <rect x="8" y="34" width="4" height="4"/>
+    <rect x="16" y="36" width="4" height="4"/>
+    <rect x="30" y="36" width="4" height="4"/>
+    <rect x="38" y="34" width="4" height="4"/>
+    <rect x="46" y="32" width="4" height="4"/>
+    
+    <!-- Feet -->
+    <rect x="0" y="36" width="2" height="6"/>
+    <rect x="6" y="38" width="2" height="6"/>
+    <rect x="14" y="40" width="2" height="4"/>
+    <rect x="34" y="40" width="2" height="4"/>
+    <rect x="42" y="38" width="2" height="6"/>
+    <rect x="48" y="36" width="2" height="6"/>
+  </g>
+  
+  <!-- Eyes -->
+  <g fill="black" stroke="none" shape-rendering="crispEdges">
+    <rect x="18" y="14" width="3" height="3"/>
+    <rect x="29" y="14" width="3" height="3"/>
+  </g>
+</svg>

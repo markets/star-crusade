@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <g fill="#PLACEHOLDER_COLOR" stroke="none" shape-rendering="crispEdges">
+    <!-- Top dome/cockpit -->
+    <rect x="20" y="6" width="10" height="4"/>
+    <rect x="16" y="10" width="18" height="4"/>
+    <rect x="14" y="14" width="22" height="2"/>
+    
+    <!-- Main saucer body -->
+    <rect x="6" y="16" width="38" height="6"/>
+    <rect x="2" y="18" width="46" height="2"/>
+    
+    <!-- Lower saucer rim -->
+    <rect x="8" y="22" width="34" height="4"/>
+    <rect x="10" y="26" width="30" height="2"/>
+    
+    <!-- Landing gear/supports -->
+    <rect x="12" y="28" width="4" height="6"/>
+    <rect x="22" y="28" width="6" height="4"/>
+    <rect x="34" y="28" width="4" height="6"/>
+    
+    <!-- Lower extensions -->
+    <rect x="8" y="34" width="8" height="2"/>
+    <rect x="20" y="32" width="10" height="4"/>
+    <rect x="34" y="34" width="8" height="2"/>
+    
+    <!-- Landing pods -->
+    <rect x="6" y="36" width="4" height="4"/>
+    <rect x="22" y="36" width="6" height="6"/>
+    <rect x="40" y="36" width="4" height="4"/>
+    
+    <!-- Bottom details -->
+    <rect x="4" y="40" width="2" height="4"/>
+    <rect x="24" y="42" width="2" height="4"/>
+    <rect x="44" y="40" width="2" height="4"/>
+    
+    <!-- Side thrusters -->
+    <rect x="0" y="20" width="2" height="2"/>
+    <rect x="48" y="20" width="2" height="2"/>
+  </g>
+  
+  <!-- Cockpit windows -->
+  <g fill="black" stroke="none" shape-rendering="crispEdges">
+    <rect x="18" y="12" width="2" height="2"/>
+    <rect x="22" y="8" width="2" height="2"/>
+    <rect x="26" y="8" width="2" height="2"/>
+    <rect x="30" y="12" width="2" height="2"/>
+  </g>
+</svg>
