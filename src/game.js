@@ -13,6 +13,7 @@ const Game = {
   bullets: [],
   enemyBullets: [],
   particles: [],
+  powerUps: [],
   score: 0,
   newMaxScore: false,
   gameOver: false,
@@ -25,6 +26,7 @@ const Game = {
   lastFrameTime: 0,
   frameId: 0,
   spawnIntervalId: 0,
+  powerUpTimer: 0,
   font: 'Press Start 2P',
   playerImage: new Image(),
   enemyTemplates: ['assets/enemy1.svg', 'assets/enemy2.svg', 'assets/enemy3.svg', 'assets/enemy4.svg', 'assets/enemy5.svg'],
@@ -297,6 +299,49 @@ class Particle {
   }
 }
 
+class PowerUp {
+  constructor() {
+    this.width = 25
+    this.height = 25
+    this.x = Math.random() * (Game.width - this.width)
+    this.y = -this.height
+    this.speed = 120 // px/s, slower than enemies
+    this.active = true
+    this.type = 'shield' // shield power-up type
+  }
+
+  update(dt) {
+    if (!this.active) return
+    this.y += this.speed * dt
+    if (this.y > Game.height) {
+      this.active = false
+    }
+  }
+
+  render() {
+    if (!this.active) return
+    
+    // Draw shield power-up as a bright blue shield-like shape
+    const ctx = Game.ctx
+    ctx.save()
+    
+    // Draw outer glow
+    ctx.shadowColor = '#00BFFF'
+    ctx.shadowBlur = 10
+    
+    // Draw shield background
+    ctx.fillStyle = '#00BFFF'
+    ctx.fillRect(this.x, this.y, this.width, this.height)
+    
+    // Draw shield pattern (cross)
+    ctx.fillStyle = '#FFFFFF'
+    ctx.fillRect(this.x + this.width * 0.4, this.y + 3, this.width * 0.2, this.height - 6)
+    ctx.fillRect(this.x + 3, this.y + this.height * 0.4, this.width - 6, this.height * 0.2)
+    
+    ctx.restore()
+  }
+}
+
 // ============================================
 // CONTROLS AND UI
 // ============================================
@@ -381,12 +426,30 @@ function spawnEnemies() {
   }
 }
 
+function spawnPowerUps(dt) {
+  if (Game.paused || Game.gameOver) return
+  
+  // Update power-up timer
+  Game.powerUpTimer += dt
+  
+  // Spawn a shield power-up randomly every 8-15 seconds
+  const nextSpawnTime = randomInt(8, 15)
+  if (Game.powerUpTimer >= nextSpawnTime) {
+    Game.powerUps.push(new PowerUp())
+    Game.powerUpTimer = 0
+  }
+}
+
 function update(dt) {
   Game.player.update(dt)
   Game.enemies.forEach((e) => e.update(dt))
   Game.bullets.forEach((b) => b.update(dt))
   Game.enemyBullets.forEach((b) => b.update(dt))
   Game.particles.forEach((p) => p.update(dt))
+  Game.powerUps.forEach((p) => p.update(dt))
+
+  // Spawn power-ups
+  spawnPowerUps(dt)
 
   // Bullet–Enemy collisions
   for (let bi = 0; bi < Game.bullets.length; bi++) {
@@ -435,11 +498,27 @@ function update(dt) {
     }
   }
 
+  // Player–PowerUp collisions
+  for (const p of Game.powerUps) {
+    if (!p.active) continue
+
+    if (collision({ x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height }, p)) {
+      p.active = false
+      // Grant 5 seconds of invulnerability
+      Game.player.invuln = 5.0
+      // Play achievement sound for power-up collection
+      play('achievement')
+      // Spawn some particles for visual feedback
+      spawnHitParticles(p.x + p.width / 2, p.y + p.height / 2, 8)
+    }
+  }
+
   // Cleanup inactive objects
   Game.bullets = Game.bullets.filter(b => b.active)
   Game.enemyBullets = Game.enemyBullets.filter(b => b.active)
   Game.enemies = Game.enemies.filter(e => e.active)
   Game.particles = Game.particles.filter(p => p.active)
+  Game.powerUps = Game.powerUps.filter(p => p.active)
 
   // Background scroll with dt
   Game.backgroundY += Game.backgroundSpeed * dt
@@ -470,6 +549,7 @@ function render() {
   Game.bullets.forEach((b) => b.render())
   Game.enemyBullets.forEach((b) => b.render())
   Game.particles.forEach((p) => p.render())
+  Game.powerUps.forEach((p) => p.render())
 
   // HUD
   const maxScore = parseInt(localStorage.getItem('gameScore')) || 0
@@ -480,6 +560,12 @@ function render() {
   // Lives
   ctx.font = `15px '${Game.font}'`
   ctx.fillText(`Lives ${Game.player.lives}`, 20, 70)
+
+  // Show invulnerability status
+  if (Game.player.invuln > 0) {
+    ctx.font = `12px '${Game.font}'`
+    ctx.fillText(`Shield: ${Math.ceil(Game.player.invuln)}s`, 20, 90)
+  }
 
   // Notify new record achieved
   if (Game.score > maxScore && !Game.newMaxScore) {
