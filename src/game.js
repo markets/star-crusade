@@ -27,7 +27,8 @@ const Game = {
   spawnIntervalId: 0,
   font: 'Press Start 2P',
   playerImage: new Image(),
-  enemyTemplates: ['enemy-template-1', 'enemy-template-2', 'enemy-template-3']
+  enemyTemplates: ['assets/enemy1-invader.svg', 'assets/enemy2-invader.svg', 'assets/enemy3-invader.svg'],
+  enemySvgCache: {} // Cache for loaded SVG content
 }
 
 // ============================================
@@ -155,31 +156,49 @@ class Enemy {
   }
 
   createColoredImage() {
+    const svgPath = Game.enemyTemplates[this.templateIndex]
+    
+    // Check if SVG is already cached
+    if (Game.enemySvgCache[svgPath]) {
+      this.generateImageFromSvg(Game.enemySvgCache[svgPath])
+      return
+    }
+    
+    // Load SVG file
+    fetch(svgPath)
+      .then(response => response.text())
+      .then(svgText => {
+        // Cache the SVG content
+        Game.enemySvgCache[svgPath] = svgText
+        this.generateImageFromSvg(svgText)
+      })
+      .catch(error => {
+        console.warn('Failed to load enemy SVG:', svgPath, error)
+        this.coloredImage = null
+      })
+  }
+  
+  generateImageFromSvg(svgText) {
     try {
-      // Get the SVG template from the HTML
-      const template = document.getElementById(Game.enemyTemplates[this.templateIndex])
-      if (!template) {
-        console.warn('Enemy template not found:', Game.enemyTemplates[this.templateIndex])
-        return
-      }
-      
-      // Clone the template
-      const svgClone = template.cloneNode(true)
+      // Parse SVG text
+      const parser = new DOMParser()
+      const svgDoc = parser.parseFromString(svgText, 'image/svg+xml')
+      const svgElement = svgDoc.documentElement
       
       // Calculate eye color based on body color brightness
       const rgb = this.color.match(/\d+/g).map(Number)
       const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
       const eyeColor = brightness > 150 ? '#000000' : '#FFFFFF'
       
-      // Replace placeholder colors in the cloned SVG
-      const bodyElements = svgClone.querySelectorAll('[fill="#PLACEHOLDER_COLOR"]')
+      // Replace placeholder colors
+      const bodyElements = svgElement.querySelectorAll('[fill="#PLACEHOLDER_COLOR"]')
       bodyElements.forEach(el => el.setAttribute('fill', this.color))
       
-      const eyeElements = svgClone.querySelectorAll('[fill="#EYE_COLOR"]')
+      const eyeElements = svgElement.querySelectorAll('[fill="#EYE_COLOR"]')
       eyeElements.forEach(el => el.setAttribute('fill', eyeColor))
       
       // Convert SVG to data URL
-      const svgData = new XMLSerializer().serializeToString(svgClone)
+      const svgData = new XMLSerializer().serializeToString(svgElement)
       const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgData)
       
       // Create image from data URL
@@ -187,7 +206,6 @@ class Enemy {
       this.coloredImage.src = dataUrl
     } catch (error) {
       console.warn('Failed to create colored enemy image:', error)
-      // Fallback: use a simple rectangle
       this.coloredImage = null
     }
   }
@@ -545,7 +563,7 @@ function start() {
   // Load images
   Game.backgroundImage.src = 'assets/background.jpeg'
   Game.playerImage.src = 'assets/ship.png'
-  // Enemy SVGs are now loaded from HTML templates
+  // Enemy SVGs are now loaded dynamically from separate files
   
   // Create player
   Game.player = new Player()
