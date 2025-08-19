@@ -526,21 +526,146 @@ function start() {
   Game.backgroundImage.src = 'assets/background.jpeg'
   Game.playerImage.src = 'assets/ship.png'
   
-  // Load enemy SVG data
-  const enemySvgFiles = [
-    'assets/enemy1-invader.svg',
-    'assets/enemy2-invader-variant.svg',
-    'assets/enemy3-invader-spike.svg'
-  ]
+  // Embedded SVG data to avoid CORS issues when running locally
+  Game.enemySvgData = [
+    // Classic Space Invader
+    `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <!-- Classic Space Invader design - clean solid rectangles -->
+  <g fill="#PLACEHOLDER_COLOR" stroke="none" shape-rendering="crispEdges">
+    <!-- Top antenna -->
+    <rect x="18" y="2" width="2" height="4"/>
+    <rect x="30" y="2" width="2" height="4"/>
+    
+    <!-- Head -->
+    <rect x="10" y="6" width="30" height="8"/>
+    
+    <!-- Body -->
+    <rect x="6" y="14" width="38" height="12"/>
+    
+    <!-- Bottom indentations -->
+    <rect x="10" y="26" width="6" height="4"/>
+    <rect x="20" y="26" width="10" height="4"/>
+    <rect x="34" y="26" width="6" height="4"/>
+    
+    <!-- Arms/legs -->
+    <rect x="2" y="30" width="8" height="6"/>
+    <rect x="14" y="30" width="6" height="8"/>
+    <rect x="30" y="30" width="6" height="8"/>
+    <rect x="40" y="30" width="8" height="6"/>
+    
+    <!-- Feet -->
+    <rect x="0" y="36" width="4" height="4"/>
+    <rect x="8" y="36" width="4" height="4"/>
+    <rect x="16" y="38" width="4" height="6"/>
+    <rect x="30" y="38" width="4" height="6"/>
+    <rect x="38" y="36" width="4" height="4"/>
+    <rect x="46" y="36" width="4" height="4"/>
+  </g>
   
-  // Load SVG data using fetch
-  Promise.all(enemySvgFiles.map(file => 
-    fetch(file).then(response => response.text())
-  )).then(svgTexts => {
-    Game.enemySvgData = svgTexts
-  }).catch(error => {
-    console.error('Failed to load SVG files:', error)
-  })
+  <!-- Eyes with contrasting color -->
+  <g fill="#EYE_COLOR" stroke="none" shape-rendering="crispEdges">
+    <rect x="14" y="10" width="4" height="4"/>
+    <rect x="32" y="10" width="4" height="4"/>
+  </g>
+</svg>`,
+    
+    // Space Invader Variant
+    `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <!-- Space Invader Variant design - clean rectangles -->
+  <g fill="#PLACEHOLDER_COLOR" stroke="none" shape-rendering="crispEdges">
+    <!-- Top spikes -->
+    <rect x="12" y="2" width="2" height="6"/>
+    <rect x="24" y="2" width="2" height="4"/>
+    <rect x="36" y="2" width="2" height="6"/>
+    
+    <!-- Head -->
+    <rect x="8" y="8" width="34" height="6"/>
+    
+    <!-- Body -->
+    <rect x="4" y="20" width="42" height="10"/>
+    
+    <!-- Bottom teeth/spikes -->
+    <rect x="6" y="30" width="4" height="4"/>
+    <rect x="14" y="30" width="4" height="6"/>
+    <rect x="22" y="30" width="6" height="4"/>
+    <rect x="32" y="30" width="4" height="6"/>
+    <rect x="40" y="30" width="4" height="4"/>
+    
+    <!-- Arms -->
+    <rect x="0" y="34" width="6" height="8"/>
+    <rect x="44" y="34" width="6" height="8"/>
+    
+    <!-- Legs -->
+    <rect x="12" y="36" width="4" height="8"/>
+    <rect x="34" y="36" width="4" height="8"/>
+    
+    <!-- Feet -->
+    <rect x="8" y="44" width="8" height="4"/>
+    <rect x="34" y="44" width="8" height="4"/>
+  </g>
+  
+  <!-- Eyes and mouth as separate contrasting elements -->
+  <g fill="#EYE_COLOR" stroke="none" shape-rendering="crispEdges">
+    <!-- Eyes (larger and different shape) -->
+    <rect x="12" y="14" width="6" height="6"/>
+    <rect x="32" y="14" width="6" height="6"/>
+    
+    <!-- Mouth/center -->
+    <rect x="22" y="16" width="6" height="2"/>
+  </g>
+</svg>`,
+    
+    // Space Invader Spike Variant
+    `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <!-- Space Invader Spike Variant design - clean rectangles -->
+  <g fill="#PLACEHOLDER_COLOR" stroke="none" shape-rendering="crispEdges">
+    <!-- Top center spike -->
+    <rect x="24" y="0" width="2" height="8"/>
+    
+    <!-- Side top spikes -->
+    <rect x="16" y="4" width="2" height="6"/>
+    <rect x="32" y="4" width="2" height="6"/>
+    
+    <!-- Main head -->
+    <rect x="12" y="10" width="26" height="8"/>
+    
+    <!-- Body core -->
+    <rect x="8" y="18" width="34" height="8"/>
+    
+    <!-- Inner body detail -->
+    <rect x="20" y="20" width="10" height="4"/>
+    
+    <!-- Bottom spikes pattern -->
+    <rect x="8" y="26" width="2" height="6"/>
+    <rect x="16" y="26" width="2" height="8"/>
+    <rect x="24" y="26" width="2" height="6"/>
+    <rect x="32" y="26" width="2" height="8"/>
+    <rect x="40" y="26" width="2" height="6"/>
+    
+    <!-- Side arms -->
+    <rect x="4" y="30" width="6" height="4"/>
+    <rect x="40" y="30" width="6" height="4"/>
+    
+    <!-- Lower legs -->
+    <rect x="12" y="34" width="4" height="6"/>
+    <rect x="34" y="34" width="4" height="6"/>
+    
+    <!-- Wide feet -->
+    <rect x="8" y="40" width="12" height="4"/>
+    <rect x="30" y="40" width="12" height="4"/>
+  </g>
+  
+  <!-- Eyes as contrasting elements -->
+  <g fill="#EYE_COLOR" stroke="none" shape-rendering="crispEdges">
+    <!-- Eyes (small and square) -->
+    <rect x="16" y="14" width="2" height="2"/>
+    <rect x="32" y="14" width="2" height="2"/>
+  </g>
+</svg>`
+  ]
 
   // Create player
   Game.player = new Player()
