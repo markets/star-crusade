@@ -27,7 +27,7 @@ const Game = {
   spawnIntervalId: 0,
   font: 'Press Start 2P',
   playerImage: new Image(),
-  enemyImages: [new Image(), new Image(), new Image()]
+  enemyTemplates: ['enemy-template-1', 'enemy-template-2', 'enemy-template-3']
 }
 
 // ============================================
@@ -148,44 +148,48 @@ class Enemy {
     this.fireRate = randomInt(20, 100) / 100 // 0.2 to 1.0 bullets per second
     this.canShoot = Math.random() < 0.3 // 30% chance this enemy can shoot
     
-    // Select a random enemy image type
-    this.imageIndex = Math.floor(Math.random() * Game.enemyImages.length)
+    // Select a random enemy template type
+    this.templateIndex = Math.floor(Math.random() * Game.enemyTemplates.length)
     this.coloredImage = null
     this.createColoredImage()
   }
 
   createColoredImage() {
-    if (!Game.enemyImages[this.imageIndex] || !Game.enemyImages[this.imageIndex].complete) {
-      // If image not loaded yet, try again later
-      setTimeout(() => this.createColoredImage(), 100)
-      return
+    try {
+      // Get the SVG template from the HTML
+      const template = document.getElementById(Game.enemyTemplates[this.templateIndex])
+      if (!template) {
+        console.warn('Enemy template not found:', Game.enemyTemplates[this.templateIndex])
+        return
+      }
+      
+      // Clone the template
+      const svgClone = template.cloneNode(true)
+      
+      // Calculate eye color based on body color brightness
+      const rgb = this.color.match(/\d+/g).map(Number)
+      const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
+      const eyeColor = brightness > 150 ? '#000000' : '#FFFFFF'
+      
+      // Replace placeholder colors in the cloned SVG
+      const bodyElements = svgClone.querySelectorAll('[fill="#PLACEHOLDER_COLOR"]')
+      bodyElements.forEach(el => el.setAttribute('fill', this.color))
+      
+      const eyeElements = svgClone.querySelectorAll('[fill="#EYE_COLOR"]')
+      eyeElements.forEach(el => el.setAttribute('fill', eyeColor))
+      
+      // Convert SVG to data URL
+      const svgData = new XMLSerializer().serializeToString(svgClone)
+      const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgData)
+      
+      // Create image from data URL
+      this.coloredImage = new Image()
+      this.coloredImage.src = dataUrl
+    } catch (error) {
+      console.warn('Failed to create colored enemy image:', error)
+      // Fallback: use a simple rectangle
+      this.coloredImage = null
     }
-    
-    // Fetch the SVG content and modify it
-    fetch(Game.enemyImages[this.imageIndex].src)
-      .then(response => response.text())
-      .then(svgText => {
-        // Replace colors in the SVG text
-        let modifiedSvg = svgText.replace(/#PLACEHOLDER_COLOR/g, this.color)
-        
-        // Replace eye color with a contrasting color (black or white depending on brightness)
-        const rgb = this.color.match(/\d+/g).map(Number)
-        const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
-        const eyeColor = brightness > 150 ? '#000000' : '#FFFFFF'
-        
-        modifiedSvg = modifiedSvg.replace(/#EYE_COLOR/g, eyeColor)
-        
-        // Convert the modified SVG to a data URL
-        const dataUrl = 'data:image/svg+xml;base64,' + btoa(modifiedSvg)
-        
-        this.coloredImage = new Image()
-        this.coloredImage.src = dataUrl
-      })
-      .catch(error => {
-        console.warn('Failed to create colored enemy image:', error)
-        // Fallback: use original image
-        this.coloredImage = Game.enemyImages[this.imageIndex]
-      })
   }
 
   update(dt) {
@@ -541,9 +545,7 @@ function start() {
   // Load images
   Game.backgroundImage.src = 'assets/background.jpeg'
   Game.playerImage.src = 'assets/ship.png'
-  Game.enemyImages[0].src = 'assets/enemy1-invader.svg'
-  Game.enemyImages[1].src = 'assets/enemy2-invader.svg'
-  Game.enemyImages[2].src = 'assets/enemy3-invader.svg'
+  // Enemy SVGs are now loaded from HTML templates
   
   // Create player
   Game.player = new Player()
