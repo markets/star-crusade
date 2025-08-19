@@ -26,7 +26,8 @@ const Game = {
   frameId: 0,
   spawnIntervalId: 0,
   font: 'Press Start 2P',
-  playerImage: new Image()
+  playerImage: new Image(),
+  enemySvgData: []
 }
 
 // ============================================
@@ -66,68 +67,6 @@ function preventDefaults(e) {
 
 function preventSpaceScroll(e) {
   if (e.target === document.body) e.preventDefault()
-}
-
-// ============================================
-// GEOMETRIC SHAPES
-// ============================================
-const shapeTypes = ['rectangle', 'circle', 'triangle', 'diamond', 'pentagon']
-
-function drawRectangle(ctx, x, y, width, height, color) {
-  ctx.fillStyle = color
-  ctx.fillRect(x, y, width, height)
-}
-
-function drawCircle(ctx, x, y, width, height, color) {
-  ctx.fillStyle = color
-  ctx.beginPath()
-  const centerX = x + width / 2
-  const centerY = y + height / 2
-  const radius = Math.min(width, height) / 2
-  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
-  ctx.fill()
-}
-
-function drawTriangle(ctx, x, y, width, height, color) {
-  ctx.fillStyle = color
-  ctx.beginPath()
-  ctx.moveTo(x + width / 2, y) // top point
-  ctx.lineTo(x, y + height) // bottom left
-  ctx.lineTo(x + width, y + height) // bottom right
-  ctx.closePath()
-  ctx.fill()
-}
-
-function drawDiamond(ctx, x, y, width, height, color) {
-  ctx.fillStyle = color
-  ctx.beginPath()
-  ctx.moveTo(x + width / 2, y) // top
-  ctx.lineTo(x + width, y + height / 2) // right
-  ctx.lineTo(x + width / 2, y + height) // bottom
-  ctx.lineTo(x, y + height / 2) // left
-  ctx.closePath()
-  ctx.fill()
-}
-
-function drawPentagon(ctx, x, y, width, height, color) {
-  ctx.fillStyle = color
-  ctx.beginPath()
-  const centerX = x + width / 2
-  const centerY = y + height / 2
-  const radius = Math.min(width, height) / 2
-  
-  for (let i = 0; i < 5; i++) {
-    const angle = (i * 2 * Math.PI / 5) - (Math.PI / 2) // start from top
-    const px = centerX + radius * Math.cos(angle)
-    const py = centerY + radius * Math.sin(angle)
-    if (i === 0) {
-      ctx.moveTo(px, py)
-    } else {
-      ctx.lineTo(px, py)
-    }
-  }
-  ctx.closePath()
-  ctx.fill()
 }
 
 // ============================================
@@ -205,8 +144,21 @@ class Enemy {
     this.fireRate = randomInt(20, 100) / 100 // 0.2 to 1.0 bullets per second
     this.canShoot = Math.random() < 0.3 // 30% chance this enemy can shoot
     
-    // Add geometric shape support
-    this.shape = shapeTypes[Math.floor(Math.random() * shapeTypes.length)]
+    // Select a random SVG enemy type
+    this.svgIndex = Math.floor(Math.random() * Game.enemySvgData.length)
+    this.coloredImage = null
+    this.createColoredImage()
+  }
+
+  createColoredImage() {
+    if (!Game.enemySvgData[this.svgIndex]) return
+    
+    // Create a colored version of the SVG
+    const coloredSvg = Game.enemySvgData[this.svgIndex].replace('#PLACEHOLDER_COLOR', this.color)
+    const dataUrl = 'data:image/svg+xml;base64,' + btoa(coloredSvg)
+    
+    this.coloredImage = new Image()
+    this.coloredImage.src = dataUrl
   }
 
   update(dt) {
@@ -231,24 +183,15 @@ class Enemy {
   render() {
     if (!this.active) return
     
-    switch (this.shape) {
-      case 'rectangle':
-        drawRectangle(Game.ctx, this.x, this.y, this.width, this.height, this.color)
-        break
-      case 'circle':
-        drawCircle(Game.ctx, this.x, this.y, this.width, this.height, this.color)
-        break
-      case 'triangle':
-        drawTriangle(Game.ctx, this.x, this.y, this.width, this.height, this.color)
-        break
-      case 'diamond':
-        drawDiamond(Game.ctx, this.x, this.y, this.width, this.height, this.color)
-        break
-      case 'pentagon':
-        drawPentagon(Game.ctx, this.x, this.y, this.width, this.height, this.color)
-        break
-      default:
-        drawRectangle(Game.ctx, this.x, this.y, this.width, this.height, this.color)
+    const ctx = Game.ctx
+    
+    if (this.coloredImage && this.coloredImage.complete) {
+      // Draw the colored SVG image
+      ctx.drawImage(this.coloredImage, this.x, this.y, this.width, this.height)
+    } else {
+      // Fallback to rectangle if image not loaded
+      ctx.fillStyle = this.color
+      ctx.fillRect(this.x, this.y, this.width, this.height)
     }
   }
 }
@@ -571,6 +514,22 @@ function start() {
   // Load images
   Game.backgroundImage.src = 'assets/background.jpeg'
   Game.playerImage.src = 'assets/ship.png'
+  
+  // Load enemy SVG data
+  const enemySvgFiles = [
+    'assets/enemy1-invader.svg',
+    'assets/enemy2-ufo.svg', 
+    'assets/enemy3-asteroid.svg'
+  ]
+  
+  // Load SVG data using fetch
+  Promise.all(enemySvgFiles.map(file => 
+    fetch(file).then(response => response.text())
+  )).then(svgTexts => {
+    Game.enemySvgData = svgTexts
+  }).catch(error => {
+    console.error('Failed to load SVG files:', error)
+  })
 
   // Create player
   Game.player = new Player()
