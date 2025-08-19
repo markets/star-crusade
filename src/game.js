@@ -27,7 +27,7 @@ const Game = {
   spawnIntervalId: 0,
   font: 'Press Start 2P',
   playerImage: new Image(),
-  enemyTemplates: ['assets/enemy1.svg', 'assets/enemy2.svg', 'assets/enemy3.svg'],
+  enemyTemplates: ['assets/enemy1.svg', 'assets/enemy2.svg', 'assets/enemy3.svg', 'assets/enemy4.svg', 'assets/enemy5.svg'],
   enemySvgCache: {}
 }
 
