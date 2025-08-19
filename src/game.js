@@ -99,8 +99,8 @@ class Player {
     this.lives = 3
     this.invuln = 0 // seconds of invulnerability (blink)
     
-    // Better shooting power-up
-    this.betterShootTimer = 0 // seconds of enhanced shooting
+    // Double shooting power-up
+    this.doubleShootTimer = 0 // seconds of double shooting
   }
 
   update(dt) {
@@ -116,16 +116,21 @@ class Player {
     // Timers
     this.fireCooldown = Math.max(0, this.fireCooldown - dt)
     this.invuln = Math.max(0, this.invuln - dt)
-    this.betterShootTimer = Math.max(0, this.betterShootTimer - dt)
+    this.doubleShootTimer = Math.max(0, this.doubleShootTimer - dt)
 
     // Shooting
     if (this.isShooting && this.fireCooldown === 0) {
-      // Enhanced shooting when better shoot power-up is active
-      const currentFireRate = this.betterShootTimer > 0 ? this.fireRate * 2 : this.fireRate
-      const bulletDamage = this.betterShootTimer > 0 ? 3 : 1
+      this.fireCooldown = 1 / this.fireRate
       
-      this.fireCooldown = 1 / currentFireRate
-      Game.bullets.push(new Bullet(this.x + this.width / 2, this.y, bulletDamage))
+      if (this.doubleShootTimer > 0) {
+        // Double shoot: fire two bullets side by side
+        const bulletOffset = 8 // pixels apart
+        Game.bullets.push(new Bullet(this.x + this.width / 2 - bulletOffset / 2, this.y, 1))
+        Game.bullets.push(new Bullet(this.x + this.width / 2 + bulletOffset / 2, this.y, 1))
+      } else {
+        // Normal shooting: single bullet
+        Game.bullets.push(new Bullet(this.x + this.width / 2, this.y, 1))
+      }
       play('shoot')
     }
   }
@@ -264,8 +269,8 @@ class Bullet {
 
   render() {
     if (!this.active) return
-    // Enhanced bullets are brighter when using better shoot power-up
-    Game.ctx.fillStyle = this.damage > 1 ? '#FFFF00' : 'white'
+    // All bullets are white since we removed enhanced damage
+    Game.ctx.fillStyle = 'white'
     Game.ctx.fillRect(this.x, this.y, this.width, this.height)
   }
 }
@@ -328,8 +333,8 @@ class PowerUp {
     this.y = -this.height
     this.speed = 120 // px/s, slower than enemies
     this.active = true
-    // Randomly choose power-up type: 50% shield, 50% better shoot
-    this.type = Math.random() < 0.5 ? 'shield' : 'better_shoot'
+    // Randomly choose power-up type: 50% shield, 50% double shoot
+    this.type = Math.random() < 0.5 ? 'shield' : 'double_shoot'
   }
 
   update(dt) {
@@ -360,8 +365,8 @@ class PowerUp {
       ctx.fillStyle = '#FFFFFF'
       ctx.fillRect(this.x + this.width * 0.4, this.y + 3, this.width * 0.2, this.height - 6)
       ctx.fillRect(this.x + 3, this.y + this.height * 0.4, this.width - 6, this.height * 0.2)
-    } else if (this.type === 'better_shoot') {
-      // Draw better shoot power-up as a red/orange weapon-like shape
+    } else if (this.type === 'double_shoot') {
+      // Draw double shoot power-up as a red/orange weapon-like shape
       // Draw outer glow
       ctx.shadowColor = '#FF4500'
       ctx.shadowBlur = 10
@@ -552,9 +557,9 @@ function update(dt) {
       if (p.type === 'shield') {
         // Grant 5 seconds of invulnerability
         Game.player.invuln = 5.0
-      } else if (p.type === 'better_shoot') {
-        // Grant 5 seconds of enhanced shooting
-        Game.player.betterShootTimer = 5.0
+      } else if (p.type === 'double_shoot') {
+        // Grant 5 seconds of double shooting
+        Game.player.doubleShootTimer = 5.0
       }
       
       // Play achievement sound for power-up collection
@@ -619,9 +624,9 @@ function render() {
     ctx.fillText(`Shield: ${Math.ceil(Game.player.invuln)}s`, 20, uiLine)
     uiLine += 20
   }
-  if (Game.player.betterShootTimer > 0) {
+  if (Game.player.doubleShootTimer > 0) {
     ctx.font = `12px '${Game.font}'`
-    ctx.fillText(`Better Shoot: ${Math.ceil(Game.player.betterShootTimer)}s`, 20, uiLine)
+    ctx.fillText(`Double Shoot: ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
   }
 
   // Notify new record achieved
