@@ -98,6 +98,9 @@ class Player {
     // Survivability
     this.lives = 3
     this.invuln = 0 // seconds of invulnerability (blink)
+    
+    // Better shooting power-up
+    this.betterShootTimer = 0 // seconds of enhanced shooting
   }
 
   update(dt) {
@@ -113,11 +116,16 @@ class Player {
     // Timers
     this.fireCooldown = Math.max(0, this.fireCooldown - dt)
     this.invuln = Math.max(0, this.invuln - dt)
+    this.betterShootTimer = Math.max(0, this.betterShootTimer - dt)
 
     // Shooting
     if (this.isShooting && this.fireCooldown === 0) {
-      this.fireCooldown = 1 / this.fireRate
-      Game.bullets.push(new Bullet(this.x + this.width / 2, this.y))
+      // Enhanced shooting when better shoot power-up is active
+      const currentFireRate = this.betterShootTimer > 0 ? this.fireRate * 2 : this.fireRate
+      const bulletDamage = this.betterShootTimer > 0 ? 3 : 1
+      
+      this.fireCooldown = 1 / currentFireRate
+      Game.bullets.push(new Bullet(this.x + this.width / 2, this.y, bulletDamage))
       play('shoot')
     }
   }
@@ -147,6 +155,7 @@ class Enemy {
     this.speed = speed // px/s
     this.color = randomColor()
     this.active = true
+    this.health = 1 // enemy health
     this.fireCooldown = 0 // seconds
     this.fireRate = randomInt(20, 100) / 100 // 0.2 to 1.0 bullets per second
     this.canShoot = Math.random() < 0.3 // 30% chance this enemy can shoot
@@ -199,6 +208,16 @@ class Enemy {
     this.coloredImage.src = dataUrl
   }
 
+  // Method to take damage
+  takeDamage(damage) {
+    this.health -= damage
+    if (this.health <= 0) {
+      this.active = false
+      return true // enemy destroyed
+    }
+    return false // enemy still alive
+  }
+
   update(dt) {
     if (!this.active) return
     this.y += this.speed * dt
@@ -227,13 +246,14 @@ class Enemy {
 }
 
 class Bullet {
-  constructor(x, y) {
+  constructor(x, y, damage = 1) {
     this.width = 5
     this.height = 10
     this.x = x - this.width / 2
     this.y = y - this.height
     this.speed = 980 // px/s
     this.active = true
+    this.damage = damage // damage this bullet deals
   }
 
   update(dt) {
@@ -244,7 +264,8 @@ class Bullet {
 
   render() {
     if (!this.active) return
-    Game.ctx.fillStyle = 'white'
+    // Enhanced bullets are brighter when using better shoot power-up
+    Game.ctx.fillStyle = this.damage > 1 ? '#FFFF00' : 'white'
     Game.ctx.fillRect(this.x, this.y, this.width, this.height)
   }
 }
@@ -307,7 +328,8 @@ class PowerUp {
     this.y = -this.height
     this.speed = 120 // px/s, slower than enemies
     this.active = true
-    this.type = 'shield' // shield power-up type
+    // Randomly choose power-up type: 50% shield, 50% better shoot
+    this.type = Math.random() < 0.5 ? 'shield' : 'better_shoot'
   }
 
   update(dt) {
@@ -321,22 +343,42 @@ class PowerUp {
   render() {
     if (!this.active) return
     
-    // Draw shield power-up as a bright blue shield-like shape
     const ctx = Game.ctx
     ctx.save()
     
-    // Draw outer glow
-    ctx.shadowColor = '#00BFFF'
-    ctx.shadowBlur = 10
-    
-    // Draw shield background
-    ctx.fillStyle = '#00BFFF'
-    ctx.fillRect(this.x, this.y, this.width, this.height)
-    
-    // Draw shield pattern (cross)
-    ctx.fillStyle = '#FFFFFF'
-    ctx.fillRect(this.x + this.width * 0.4, this.y + 3, this.width * 0.2, this.height - 6)
-    ctx.fillRect(this.x + 3, this.y + this.height * 0.4, this.width - 6, this.height * 0.2)
+    if (this.type === 'shield') {
+      // Draw shield power-up as a bright blue shield-like shape
+      // Draw outer glow
+      ctx.shadowColor = '#00BFFF'
+      ctx.shadowBlur = 10
+      
+      // Draw shield background
+      ctx.fillStyle = '#00BFFF'
+      ctx.fillRect(this.x, this.y, this.width, this.height)
+      
+      // Draw shield pattern (cross)
+      ctx.fillStyle = '#FFFFFF'
+      ctx.fillRect(this.x + this.width * 0.4, this.y + 3, this.width * 0.2, this.height - 6)
+      ctx.fillRect(this.x + 3, this.y + this.height * 0.4, this.width - 6, this.height * 0.2)
+    } else if (this.type === 'better_shoot') {
+      // Draw better shoot power-up as a red/orange weapon-like shape
+      // Draw outer glow
+      ctx.shadowColor = '#FF4500'
+      ctx.shadowBlur = 10
+      
+      // Draw weapon background
+      ctx.fillStyle = '#FF4500'
+      ctx.fillRect(this.x, this.y, this.width, this.height)
+      
+      // Draw weapon pattern (double arrows pointing up)
+      ctx.fillStyle = '#FFFF00'
+      // Left arrow
+      ctx.fillRect(this.x + this.width * 0.15, this.y + this.height * 0.3, this.width * 0.1, this.height * 0.4)
+      ctx.fillRect(this.x + this.width * 0.05, this.y + this.height * 0.5, this.width * 0.3, this.height * 0.1)
+      // Right arrow  
+      ctx.fillRect(this.x + this.width * 0.75, this.y + this.height * 0.3, this.width * 0.1, this.height * 0.4)
+      ctx.fillRect(this.x + this.width * 0.65, this.y + this.height * 0.5, this.width * 0.3, this.height * 0.1)
+    }
     
     ctx.restore()
   }
@@ -460,10 +502,12 @@ function update(dt) {
       if (!e.active) continue
       if (collision(b, e)) {
         b.active = false
-        e.active = false
-        Game.score += 10
-        // Spawn small burst of particles
-        spawnHitParticles(e.x + e.width / 2, e.y + e.height / 2, 10)
+        const destroyed = e.takeDamage(b.damage)
+        if (destroyed) {
+          Game.score += 10
+          // Spawn small burst of particles
+          spawnHitParticles(e.x + e.width / 2, e.y + e.height / 2, 10)
+        }
         break
       }
     }
@@ -504,8 +548,15 @@ function update(dt) {
 
     if (collision({ x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height }, p)) {
       p.active = false
-      // Grant 5 seconds of invulnerability
-      Game.player.invuln = 5.0
+      
+      if (p.type === 'shield') {
+        // Grant 5 seconds of invulnerability
+        Game.player.invuln = 5.0
+      } else if (p.type === 'better_shoot') {
+        // Grant 5 seconds of enhanced shooting
+        Game.player.betterShootTimer = 5.0
+      }
+      
       // Play achievement sound for power-up collection
       play('achievement')
       // Spawn some particles for visual feedback
@@ -561,10 +612,16 @@ function render() {
   ctx.font = `15px '${Game.font}'`
   ctx.fillText(`Lives ${Game.player.lives}`, 20, 70)
 
-  // Show invulnerability status
+  // Show power-up status
+  let uiLine = 90
   if (Game.player.invuln > 0) {
     ctx.font = `12px '${Game.font}'`
-    ctx.fillText(`Shield: ${Math.ceil(Game.player.invuln)}s`, 20, 90)
+    ctx.fillText(`Shield: ${Math.ceil(Game.player.invuln)}s`, 20, uiLine)
+    uiLine += 20
+  }
+  if (Game.player.betterShootTimer > 0) {
+    ctx.font = `12px '${Game.font}'`
+    ctx.fillText(`Better Shoot: ${Math.ceil(Game.player.betterShootTimer)}s`, 20, uiLine)
   }
 
   // Notify new record achieved
