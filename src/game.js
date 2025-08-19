@@ -211,7 +211,6 @@ class Enemy {
 
   render() {
     if (!this.active) return
-
     Game.ctx.drawImage(this.coloredImage, this.x, this.y, this.width, this.height)
   }
 }

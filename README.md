@@ -13,5 +13,5 @@ Are you ready to embark on the journey?
 1. Clone, fork or download this repository
 2. Install dependencies: `npm install`
 3. Start the development server: `npm start`
-5. Open your browser and go to [localhost:8080](http://localhost:8080)
-6. Enjoy 🔫
+4. Open your browser and go to [localhost:8080](http://localhost:8080)
+5. Enjoy 🔫
