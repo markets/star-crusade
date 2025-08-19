@@ -97,7 +97,8 @@ class Player {
 
     // Survivability
     this.lives = 3
-    this.invuln = 0 // seconds of invulnerability (blink)
+    this.invuln = 0 // seconds of invulnerability (blink) from collision
+    this.shieldTimer = 0 // seconds of shield protection from power-up
     
     // Double shooting power-up
     this.doubleShootTimer = 0 // seconds of double shooting
@@ -119,6 +120,7 @@ class Player {
     // Timers
     this.fireCooldown = Math.max(0, this.fireCooldown - dt)
     this.invuln = Math.max(0, this.invuln - dt)
+    this.shieldTimer = Math.max(0, this.shieldTimer - dt)
     this.doubleShootTimer = Math.max(0, this.doubleShootTimer - dt)
 
     // Shooting with enhanced fire rate during double shoot
@@ -128,26 +130,27 @@ class Player {
       this.fireCooldown = 1 / currentFireRate
       
       if (this.doubleShootTimer > 0) {
-        // Double shoot: fire two bullets side by side with wider separation
-        const bulletOffset = 16 // increased pixels apart for wider area
-        Game.bullets.push(new Bullet(this.x + this.width / 2 - bulletOffset / 2, this.y, 1, true))
-        Game.bullets.push(new Bullet(this.x + this.width / 2 + bulletOffset / 2, this.y, 1, true))
+        // Double shoot: fire two bullets side by side with even wider separation
+        const bulletOffset = 24 // increased pixels apart for wider area
+        Game.bullets.push(new Bullet(this.x + this.width / 2 - bulletOffset / 2, this.y, true))
+        Game.bullets.push(new Bullet(this.x + this.width / 2 + bulletOffset / 2, this.y, true))
       } else {
         // Normal shooting: single bullet
-        Game.bullets.push(new Bullet(this.x + this.width / 2, this.y, 1, false))
+        Game.bullets.push(new Bullet(this.x + this.width / 2, this.y, false))
       }
       play('shoot')
     }
   }
 
   render() {
-    // Blink when invulnerable
+    // Blink when invulnerable from collision
     if (this.invuln > 0 && Math.floor(performance.now() / 100) % 2 === 0) return
     Game.ctx.drawImage(Game.playerImage, this.x, this.y, this.width, this.height)
   }
 
   hit() {
-    if (this.invuln > 0 || Game.gameOver) return
+    // Check for shield protection first
+    if (this.shieldTimer > 0 || this.invuln > 0 || Game.gameOver) return
     this.lives -= 1
     this.invuln = 1.2
     if (this.lives <= 0) {
@@ -200,7 +203,6 @@ class Enemy {
     this.speed = speed // px/s
     this.color = randomColor()
     this.active = true
-    this.health = 1 // enemy health
     this.fireCooldown = 0 // seconds
     this.fireRate = randomInt(20, 100) / 100 // 0.2 to 1.0 bullets per second
     this.canShoot = Math.random() < 0.3 // 30% chance this enemy can shoot
@@ -253,16 +255,6 @@ class Enemy {
     this.coloredImage.src = dataUrl
   }
 
-  // Method to take damage
-  takeDamage(damage) {
-    this.health -= damage
-    if (this.health <= 0) {
-      this.active = false
-      return true // enemy destroyed
-    }
-    return false // enemy still alive
-  }
-
   update(dt) {
     if (!this.active) return
     this.y += this.speed * dt
@@ -291,14 +283,13 @@ class Enemy {
 }
 
 class Bullet {
-  constructor(x, y, damage = 1, isDoubleShoot = false) {
-    this.width = 5
+  constructor(x, y, isDoubleShoot = false) {
+    this.width = isDoubleShoot ? 8 : 5  // wider bullets for double shoot
     this.height = 10
     this.x = x - this.width / 2
     this.y = y - this.height
     this.speed = 980 // px/s
     this.active = true
-    this.damage = damage // damage this bullet deals
     this.isDoubleShoot = isDoubleShoot // whether this bullet is from double shoot power-up
   }
 
@@ -601,12 +592,10 @@ function update(dt) {
       if (!e.active) continue
       if (collision(b, e)) {
         b.active = false
-        const destroyed = e.takeDamage(b.damage)
-        if (destroyed) {
-          Game.score += 10
-          // Spawn small burst of particles
-          spawnHitParticles(e.x + e.width / 2, e.y + e.height / 2, 10)
-        }
+        e.active = false
+        Game.score += 10
+        // Spawn small burst of particles
+        spawnHitParticles(e.x + e.width / 2, e.y + e.height / 2, 10)
         break
       }
     }
@@ -649,11 +638,11 @@ function update(dt) {
       p.active = false
       
       if (p.type === 'shield') {
-        // Grant 5 seconds of invulnerability
-        Game.player.invuln = 5.0
+        // Grant 10 seconds of shield protection
+        Game.player.shieldTimer = 10.0
       } else if (p.type === 'double_shoot') {
-        // Grant 5 seconds of double shooting
-        Game.player.doubleShootTimer = 5.0
+        // Grant 10 seconds of double shooting
+        Game.player.doubleShootTimer = 10.0
       } else if (p.type === 'bomb') {
         // Give player a bomb
         Game.player.bombs += 1
@@ -719,9 +708,9 @@ function render() {
 
   // Show power-up status
   let uiLine = 90
-  if (Game.player.invuln > 0) {
+  if (Game.player.shieldTimer > 0) {
     ctx.font = `12px '${Game.font}'`
-    ctx.fillText(`Shield: ${Math.ceil(Game.player.invuln)}s`, 20, uiLine)
+    ctx.fillText(`Shield: ${Math.ceil(Game.player.shieldTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.doubleShootTimer > 0) {
