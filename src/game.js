@@ -219,7 +219,21 @@ class Enemy {
   render() {
     if (!this.active) return
     if (this.coloredImage && this.coloredImage.complete) {
+      // Draw the enemy image
       Game.ctx.drawImage(this.coloredImage, this.x, this.y, this.width, this.height)
+      
+      // Draw border around the enemy
+      const borderWidth = 2
+      
+      // Draw black outer border
+      Game.ctx.strokeStyle = 'black'
+      Game.ctx.lineWidth = borderWidth + 1
+      Game.ctx.strokeRect(this.x - borderWidth/2, this.y - borderWidth/2, this.width + borderWidth, this.height + borderWidth)
+      
+      // Draw white inner border
+      Game.ctx.strokeStyle = 'white'
+      Game.ctx.lineWidth = borderWidth
+      Game.ctx.strokeRect(this.x, this.y, this.width, this.height)
     }
   }
 }
