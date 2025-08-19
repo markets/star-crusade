@@ -390,87 +390,24 @@ class PowerUp {
     if (!this.active) return
     
     const ctx = Game.ctx
-    ctx.save()
+    let emoji = ''
     
+    // Map power-up types to emojis
     if (this.type === 'shield') {
-      // Draw shield power-up as a bright blue shield-like shape
-      // Draw outer glow
-      ctx.shadowColor = '#00BFFF'
-      ctx.shadowBlur = 10
-      
-      // Draw shield background
-      ctx.fillStyle = '#00BFFF'
-      ctx.fillRect(this.x, this.y, this.width, this.height)
-      
-      // Draw shield pattern (cross)
-      ctx.fillStyle = '#FFFFFF'
-      ctx.fillRect(this.x + this.width * 0.4, this.y + 3, this.width * 0.2, this.height - 6)
-      ctx.fillRect(this.x + 3, this.y + this.width * 0.4, this.width - 6, this.height * 0.2)
+      emoji = '🛡️'
     } else if (this.type === 'double_shoot') {
-      // Draw double shoot power-up as a red/orange weapon-like shape
-      // Draw outer glow
-      ctx.shadowColor = '#FF4500'
-      ctx.shadowBlur = 10
-      
-      // Draw weapon background
-      ctx.fillStyle = '#FF4500'
-      ctx.fillRect(this.x, this.y, this.width, this.height)
-      
-      // Draw weapon pattern (double arrows pointing up)
-      ctx.fillStyle = '#FFFF00'
-      // Left arrow
-      ctx.fillRect(this.x + this.width * 0.15, this.y + this.height * 0.3, this.width * 0.1, this.height * 0.4)
-      ctx.fillRect(this.x + this.width * 0.05, this.y + this.height * 0.5, this.width * 0.3, this.height * 0.1)
-      // Right arrow  
-      ctx.fillRect(this.x + this.width * 0.75, this.y + this.height * 0.3, this.width * 0.1, this.height * 0.4)
-      ctx.fillRect(this.x + this.width * 0.65, this.y + this.height * 0.5, this.width * 0.3, this.height * 0.1)
+      emoji = '🔫🔫'
     } else if (this.type === 'bomb') {
-      // Draw bomb power-up as a dark gray/black bomb with orange/red glow
-      // Draw outer glow
-      ctx.shadowColor = '#FF6600'
-      ctx.shadowBlur = 12
-      
-      // Draw bomb body (circle)
-      ctx.fillStyle = '#333333'
-      ctx.beginPath()
-      ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.4, 0, Math.PI * 2)
-      ctx.fill()
-      
-      // Draw bomb fuse/spark
-      ctx.fillStyle = '#FF6600'
-      ctx.fillRect(this.x + this.width * 0.45, this.y + this.height * 0.1, this.width * 0.1, this.height * 0.3)
-      
-      // Draw explosion pattern
-      ctx.fillStyle = '#FFFF00'
-      ctx.beginPath()
-      ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.15, 0, Math.PI * 2)
-      ctx.fill()
+      emoji = '💣'
     } else if (this.type === 'live') {
-      // Draw life power-up as a bright green heart/cross
-      // Draw outer glow
-      ctx.shadowColor = '#00FF00'
-      ctx.shadowBlur = 10
-      
-      // Draw life background
-      ctx.fillStyle = '#00FF00'
-      ctx.fillRect(this.x, this.y, this.width, this.height)
-      
-      // Draw heart/cross pattern
-      ctx.fillStyle = '#FFFFFF'
-      // Vertical line
-      ctx.fillRect(this.x + this.width * 0.4, this.y + 3, this.width * 0.2, this.height - 6)
-      // Horizontal line
-      ctx.fillRect(this.x + 3, this.y + this.height * 0.4, this.width - 6, this.height * 0.2)
-      
-      // Add small hearts in corners
-      ctx.fillStyle = '#FF0000'
-      ctx.fillRect(this.x + 2, this.y + 2, 4, 4)
-      ctx.fillRect(this.x + this.width - 6, this.y + 2, 4, 4)
-      ctx.fillRect(this.x + 2, this.y + this.height - 6, 4, 4)
-      ctx.fillRect(this.x + this.width - 6, this.y + this.height - 6, 4, 4)
+      emoji = '♥️'
     }
     
-    ctx.restore()
+    // Render emoji
+    ctx.font = `${this.width}px Arial`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
   }
 }
 
