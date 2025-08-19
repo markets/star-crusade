@@ -118,18 +118,20 @@ class Player {
     this.invuln = Math.max(0, this.invuln - dt)
     this.doubleShootTimer = Math.max(0, this.doubleShootTimer - dt)
 
-    // Shooting
+    // Shooting with enhanced fire rate during double shoot
     if (this.isShooting && this.fireCooldown === 0) {
-      this.fireCooldown = 1 / this.fireRate
+      // Double fire rate during double shoot
+      const currentFireRate = this.doubleShootTimer > 0 ? this.fireRate * 2 : this.fireRate
+      this.fireCooldown = 1 / currentFireRate
       
       if (this.doubleShootTimer > 0) {
-        // Double shoot: fire two bullets side by side
-        const bulletOffset = 8 // pixels apart
-        Game.bullets.push(new Bullet(this.x + this.width / 2 - bulletOffset / 2, this.y, 1))
-        Game.bullets.push(new Bullet(this.x + this.width / 2 + bulletOffset / 2, this.y, 1))
+        // Double shoot: fire two bullets side by side with wider separation
+        const bulletOffset = 16 // increased pixels apart for wider area
+        Game.bullets.push(new Bullet(this.x + this.width / 2 - bulletOffset / 2, this.y, 1, true))
+        Game.bullets.push(new Bullet(this.x + this.width / 2 + bulletOffset / 2, this.y, 1, true))
       } else {
         // Normal shooting: single bullet
-        Game.bullets.push(new Bullet(this.x + this.width / 2, this.y, 1))
+        Game.bullets.push(new Bullet(this.x + this.width / 2, this.y, 1, false))
       }
       play('shoot')
     }
@@ -251,7 +253,7 @@ class Enemy {
 }
 
 class Bullet {
-  constructor(x, y, damage = 1) {
+  constructor(x, y, damage = 1, isDoubleShoot = false) {
     this.width = 5
     this.height = 10
     this.x = x - this.width / 2
@@ -259,6 +261,7 @@ class Bullet {
     this.speed = 980 // px/s
     this.active = true
     this.damage = damage // damage this bullet deals
+    this.isDoubleShoot = isDoubleShoot // whether this bullet is from double shoot power-up
   }
 
   update(dt) {
@@ -269,8 +272,8 @@ class Bullet {
 
   render() {
     if (!this.active) return
-    // All bullets are white since we removed enhanced damage
-    Game.ctx.fillStyle = 'white'
+    // Yellow bullets for double shoot, white for normal
+    Game.ctx.fillStyle = this.isDoubleShoot ? 'yellow' : 'white'
     Game.ctx.fillRect(this.x, this.y, this.width, this.height)
   }
 }
