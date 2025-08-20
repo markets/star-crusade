@@ -477,9 +477,9 @@ function spawnEnemies() {
   Game.interval++
 
   // Difficulty scaling by elapsed "intervals"
-  let maxEnemies = Math.round(clamp(Game.interval / 10, 1, 40))
-  let maxSpeed = clamp(120 + Game.interval * 10, 120, 600) // px/s
-  let maxSize = clamp(40 + Game.interval * 10, 50, 100)
+  let maxEnemies = Math.round(clamp(Game.interval / 10, 1, 30))
+  let maxSpeed = clamp(80 + Game.interval * 10, 80, 500) // px/s
+  let maxSize = clamp(40 + Game.interval * 10, 40, 100)
 
   for (let i = 0; i < maxEnemies; i++) {
     const speed = randomInt(80, maxSpeed)
