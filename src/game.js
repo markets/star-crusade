@@ -123,15 +123,15 @@ class Player {
     this.shieldTimer = Math.max(0, this.shieldTimer - dt)
     this.doubleShootTimer = Math.max(0, this.doubleShootTimer - dt)
 
-    // Shooting with enhanced fire rate during double shoot
+    // Shooting
     if (this.isShooting && this.fireCooldown === 0) {
       // Double fire rate during double shoot
       const currentFireRate = this.doubleShootTimer > 0 ? this.fireRate * 2 : this.fireRate
       this.fireCooldown = 1 / currentFireRate
       
       if (this.doubleShootTimer > 0) {
-        // Double shoot: fire two bullets side by side with even wider separation
-        const bulletOffset = 30 // increased pixels apart for wider area
+        // Double shoot: fire two bullets side by side
+        const bulletOffset = 30
         Game.bullets.push(new Bullet(this.x + this.width / 2 - bulletOffset / 2, this.y, true))
         Game.bullets.push(new Bullet(this.x + this.width / 2 + bulletOffset / 2, this.y, true))
       } else {
@@ -407,7 +407,7 @@ class PowerUp {
     } else if (this.type === 'live') {
       emoji = '♥️'
     } else if (this.type === 'score') {
-      emoji = '🪙'
+      emoji = '🎖️'
     }
     
     // Render emoji
