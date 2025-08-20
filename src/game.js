@@ -131,7 +131,7 @@ class Player {
       
       if (this.doubleShootTimer > 0) {
         // Double shoot: fire two bullets side by side with even wider separation
-        const bulletOffset = 24 // increased pixels apart for wider area
+        const bulletOffset = 30 // increased pixels apart for wider area
         Game.bullets.push(new Bullet(this.x + this.width / 2 - bulletOffset / 2, this.y, true))
         Game.bullets.push(new Bullet(this.x + this.width / 2 + bulletOffset / 2, this.y, true))
       } else {
@@ -284,7 +284,7 @@ class Enemy {
 
 class Bullet {
   constructor(x, y, isDoubleShoot = false) {
-    this.width = isDoubleShoot ? 8 : 5  // wider bullets for double shoot
+    this.width = isDoubleShoot ? 8 : 5
     this.height = 10
     this.x = x - this.width / 2
     this.y = y - this.height
@@ -698,6 +698,7 @@ function render() {
     ctx.fillText(restartText, (Game.width - g2.width) / 2, Game.height / 2 + 40)
   }
 
+  // PAUSED
   if (Game.paused && !Game.gameOver) {
     ctx.fillStyle = 'rgba(0,0,0,0.6)'
     ctx.fillRect(0, 0, Game.width, Game.height)
@@ -744,7 +745,7 @@ function start() {
     if (event.key === 's') toggleSound()
     if (event.key === 'r') restart()
     if (event.key === 'p') togglePause()
-    if (event.key === 'b' || event.key === 'B') {
+    if (event.key === 'b') {
       if (!Game.gameOver && !Game.paused) {
         Game.player.useBomb()
       }
