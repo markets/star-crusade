@@ -152,7 +152,7 @@ class Player {
     // Check for shield protection first
     if (this.shieldTimer > 0 || this.invuln > 0 || Game.gameOver) return
     this.lives -= 1
-    this.invuln = 1.2
+    this.invuln = 2
     if (this.lives <= 0) {
       Game.gameOver = true
     }
@@ -569,10 +569,10 @@ function update(dt) {
       
       if (p.type === 'shield') {
         // Grant 10 seconds of shield protection
-        Game.player.shieldTimer = 10.0
+        Game.player.shieldTimer += 10.0
       } else if (p.type === 'double_shoot') {
         // Grant 10 seconds of double shooting
-        Game.player.doubleShootTimer = 10.0
+        Game.player.doubleShootTimer += 10.0
       } else if (p.type === 'bomb') {
         // Give player a bomb
         Game.player.bombs += 1
