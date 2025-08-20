@@ -13,6 +13,7 @@ const Game = {
   bullets: [],
   enemyBullets: [],
   particles: [],
+  powerUps: [],
   score: 0,
   newMaxScore: false,
   gameOver: false,
@@ -25,6 +26,7 @@ const Game = {
   lastFrameTime: 0,
   frameId: 0,
   spawnIntervalId: 0,
+  powerUpTimer: 0,
   font: 'Press Start 2P',
   playerImage: new Image(),
   enemyTemplates: ['assets/enemy1.svg', 'assets/enemy2.svg', 'assets/enemy3.svg', 'assets/enemy4.svg', 'assets/enemy5.svg'],
@@ -95,7 +97,14 @@ class Player {
 
     // Survivability
     this.lives = 3
-    this.invuln = 0 // seconds of invulnerability (blink)
+    this.invuln = 0 // seconds of invulnerability (blink) from collision
+    this.shieldTimer = 0 // seconds of shield protection from power-up
+    
+    // Double shooting power-up
+    this.doubleShootTimer = 0 // seconds of double shooting
+    
+    // Bomb power-up inventory
+    this.bombs = 0 // number of bombs player has
   }
 
   update(dt) {
@@ -111,28 +120,65 @@ class Player {
     // Timers
     this.fireCooldown = Math.max(0, this.fireCooldown - dt)
     this.invuln = Math.max(0, this.invuln - dt)
+    this.shieldTimer = Math.max(0, this.shieldTimer - dt)
+    this.doubleShootTimer = Math.max(0, this.doubleShootTimer - dt)
 
     // Shooting
     if (this.isShooting && this.fireCooldown === 0) {
-      this.fireCooldown = 1 / this.fireRate
-      Game.bullets.push(new Bullet(this.x + this.width / 2, this.y))
+      // Double fire rate during double shoot
+      const currentFireRate = this.doubleShootTimer > 0 ? this.fireRate * 2 : this.fireRate
+      this.fireCooldown = 1 / currentFireRate
+      
+      if (this.doubleShootTimer > 0) {
+        // Double shoot: fire two bullets side by side
+        const bulletOffset = 30
+        Game.bullets.push(new Bullet(this.x + this.width / 2 - bulletOffset / 2, this.y, true))
+        Game.bullets.push(new Bullet(this.x + this.width / 2 + bulletOffset / 2, this.y, true))
+      } else {
+        // Normal shooting: single bullet
+        Game.bullets.push(new Bullet(this.x + this.width / 2, this.y, false))
+      }
       play('shoot')
     }
   }
 
   render() {
-    // Blink when invulnerable
-    if (this.invuln > 0 && Math.floor(performance.now() / 100) % 2 === 0) return
+    // Blink when invulnerable from collision or shield power-up
+    if ((this.invuln > 0 || this.shieldTimer > 0) && Math.floor(performance.now() / 100) % 2 === 0) return
     Game.ctx.drawImage(Game.playerImage, this.x, this.y, this.width, this.height)
   }
 
   hit() {
-    if (this.invuln > 0 || Game.gameOver) return
+    // Check for shield protection first
+    if (this.shieldTimer > 0 || this.invuln > 0 || Game.gameOver) return
     this.lives -= 1
-    this.invuln = 1.2
+    this.invuln = 2
     if (this.lives <= 0) {
       Game.gameOver = true
     }
+  }
+
+  useBomb() {
+    if (this.bombs <= 0) return false
+    
+    this.bombs -= 1
+    
+    // Kill all enemies on screen
+    Game.enemies.forEach(enemy => {
+      if (enemy.active) {
+        enemy.active = false
+        Game.score += 10 // Give points for each enemy killed
+        // Spawn particles for each destroyed enemy
+        spawnHitParticles(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, 15)
+      }
+    })
+    
+    // Remove all enemy bullets
+    Game.enemyBullets.forEach(bullet => {
+      bullet.active = false
+    })
+    
+    play('explosion')
   }
 }
 
@@ -225,13 +271,14 @@ class Enemy {
 }
 
 class Bullet {
-  constructor(x, y) {
-    this.width = 5
+  constructor(x, y, isDoubleShoot = false) {
+    this.width = isDoubleShoot ? 8 : 5
     this.height = 10
     this.x = x - this.width / 2
     this.y = y - this.height
     this.speed = 980 // px/s
     this.active = true
+    this.isDoubleShoot = isDoubleShoot // whether this bullet is from double shoot power-up
   }
 
   update(dt) {
@@ -242,7 +289,8 @@ class Bullet {
 
   render() {
     if (!this.active) return
-    Game.ctx.fillStyle = 'white'
+    // Yellow bullets for double shoot, white for normal
+    Game.ctx.fillStyle = this.isDoubleShoot ? 'yellow' : 'white'
     Game.ctx.fillRect(this.x, this.y, this.width, this.height)
   }
 }
@@ -294,6 +342,65 @@ class Particle {
     const a = clamp(1 - this.t / this.life, 0, 1)
     Game.ctx.fillStyle = `rgba(255,220,120,${a.toFixed(3)})`
     Game.ctx.fillRect(this.x, this.y, 2, 2)
+  }
+}
+
+class PowerUp {
+  constructor() {
+    this.width = 25
+    this.height = 25
+    this.x = Math.random() * (Game.width - this.width)
+    this.y = -this.height
+    this.speed = 120 // px/s, slower than enemies
+    this.active = true
+    // Randomly choose power-up type: 20% each type (5 types)
+    const rand = Math.random()
+    if (rand < 0.2) {
+      this.type = 'shield'
+    } else if (rand < 0.4) {
+      this.type = 'double_shoot'
+    } else if (rand < 0.6) {
+      this.type = 'bomb'
+    } else if (rand < 0.8) {
+      this.type = 'live'
+    } else {
+      this.type = 'score'
+    }
+  }
+
+  update(dt) {
+    if (!this.active) return
+    this.y += this.speed * dt
+    if (this.y > Game.height) {
+      this.active = false
+    }
+  }
+
+  render() {
+    if (!this.active) return
+    
+    // Make power-ups blink
+    if (Math.floor(performance.now() / 200) % 2 === 0) return
+    
+    const ctx = Game.ctx
+    let emoji = ''
+    
+    // Map power-up types to emojis
+    if (this.type === 'shield') {
+      emoji = '🛡️'
+    } else if (this.type === 'double_shoot') {
+      emoji = '🔫🔫'
+    } else if (this.type === 'bomb') {
+      emoji = '💣'
+    } else if (this.type === 'live') {
+      emoji = '♥️'
+    } else if (this.type === 'score') {
+      emoji = '🎖️'
+    }
+    
+    // Render emoji
+    ctx.font = `${this.width}px Arial`
+    ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
   }
 }
 
@@ -381,12 +488,30 @@ function spawnEnemies() {
   }
 }
 
+function spawnPowerUps(dt) {
+  if (Game.paused || Game.gameOver) return
+  
+  // Update power-up timer
+  Game.powerUpTimer += dt
+  
+  // Spawn a new power-up randomly every 10-20 seconds
+  const nextSpawnTime = randomInt(10, 20)
+  if (Game.powerUpTimer >= nextSpawnTime) {
+    Game.powerUps.push(new PowerUp())
+    Game.powerUpTimer = 0
+  }
+}
+
 function update(dt) {
   Game.player.update(dt)
   Game.enemies.forEach((e) => e.update(dt))
   Game.bullets.forEach((b) => b.update(dt))
   Game.enemyBullets.forEach((b) => b.update(dt))
   Game.particles.forEach((p) => p.update(dt))
+  Game.powerUps.forEach((p) => p.update(dt))
+
+  // Spawn power-ups
+  spawnPowerUps(dt)
 
   // Bullet–Enemy collisions
   for (let bi = 0; bi < Game.bullets.length; bi++) {
@@ -435,11 +560,43 @@ function update(dt) {
     }
   }
 
+  // Player–PowerUp collisions
+  for (const p of Game.powerUps) {
+    if (!p.active) continue
+
+    if (collision({ x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height }, p)) {
+      p.active = false
+      
+      if (p.type === 'shield') {
+        // Grant 10 seconds of shield protection
+        Game.player.shieldTimer += 10.0
+      } else if (p.type === 'double_shoot') {
+        // Grant 10 seconds of double shooting
+        Game.player.doubleShootTimer += 10.0
+      } else if (p.type === 'bomb') {
+        // Give player a bomb
+        Game.player.bombs += 1
+      } else if (p.type === 'live') {
+        // Give player an extra life
+        Game.player.lives += 1
+      } else if (p.type === 'score') {
+        // Give player 100 extra points
+        Game.score += 100
+      }
+      
+      // Play achievement sound for power-up collection
+      play('achievement')
+      // Spawn some particles for visual feedback
+      spawnHitParticles(p.x + p.width / 2, p.y + p.height / 2, 8)
+    }
+  }
+
   // Cleanup inactive objects
   Game.bullets = Game.bullets.filter(b => b.active)
   Game.enemyBullets = Game.enemyBullets.filter(b => b.active)
   Game.enemies = Game.enemies.filter(e => e.active)
   Game.particles = Game.particles.filter(p => p.active)
+  Game.powerUps = Game.powerUps.filter(p => p.active)
 
   // Background scroll with dt
   Game.backgroundY += Game.backgroundSpeed * dt
@@ -470,6 +627,7 @@ function render() {
   Game.bullets.forEach((b) => b.render())
   Game.enemyBullets.forEach((b) => b.render())
   Game.particles.forEach((p) => p.render())
+  Game.powerUps.forEach((p) => p.render())
 
   // HUD
   const maxScore = parseInt(localStorage.getItem('gameScore')) || 0
@@ -479,7 +637,24 @@ function render() {
 
   // Lives
   ctx.font = `15px '${Game.font}'`
-  ctx.fillText(`Lives ${Game.player.lives}`, 20, 70)
+  ctx.fillText(`♥️ ${Game.player.lives}`, 20, 70)
+
+  // Show power-up status
+  let uiLine = 90
+  if (Game.player.shieldTimer > 0) {
+    ctx.font = `15px '${Game.font}'`
+    ctx.fillText(`🛡️ ${Math.ceil(Game.player.shieldTimer)}s`, 20, uiLine)
+    uiLine += 20
+  }
+  if (Game.player.doubleShootTimer > 0) {
+    ctx.font = `15px '${Game.font}'`
+    ctx.fillText(`🔫🔫 ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
+    uiLine += 20
+  }
+  if (Game.player.bombs > 0) {
+    ctx.font = `15px '${Game.font}'`
+    ctx.fillText(`💣 ${Game.player.bombs}`, 20, uiLine)
+  }
 
   // Notify new record achieved
   if (Game.score > maxScore && !Game.newMaxScore) {
@@ -511,6 +686,7 @@ function render() {
     ctx.fillText(restartText, (Game.width - g2.width) / 2, Game.height / 2 + 40)
   }
 
+  // PAUSED
   if (Game.paused && !Game.gameOver) {
     ctx.fillStyle = 'rgba(0,0,0,0.6)'
     ctx.fillRect(0, 0, Game.width, Game.height)
@@ -557,6 +733,11 @@ function start() {
     if (event.key === 's') toggleSound()
     if (event.key === 'r') restart()
     if (event.key === 'p') togglePause()
+    if (event.key === 'b') {
+      if (!Game.gameOver && !Game.paused) {
+        Game.player.useBomb()
+      }
+    }
 
     play("soundtrack", 0.25)
   })
