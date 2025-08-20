@@ -647,6 +647,8 @@ function render() {
   const maxScore = parseInt(localStorage.getItem('gameScore')) || 0
   ctx.fillStyle = 'white'
   ctx.font = `20px '${Game.font}'`
+  ctx.textAlign = 'start'
+  ctx.textBaseline = 'alphabetic'
   ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 20, 40)
 
   // Lives
