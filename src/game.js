@@ -410,17 +410,9 @@ class PowerUp {
       emoji = '🪙'
     }
     
-    // Save canvas context state before modifying text properties
-    ctx.save()
-    
     // Render emoji
     ctx.font = `${this.width}px Arial`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
     ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
-    
-    // Restore canvas context state to prevent affecting other text rendering
-    ctx.restore()
   }
 }
 
@@ -514,8 +506,8 @@ function spawnPowerUps(dt) {
   // Update power-up timer
   Game.powerUpTimer += dt
   
-  // Spawn a shield power-up randomly every 8-15 seconds
-  const nextSpawnTime = randomInt(8, 15)
+  // Spawn a new power-up randomly every 10-20 seconds
+  const nextSpawnTime = randomInt(10, 20)
   if (Game.powerUpTimer >= nextSpawnTime) {
     Game.powerUps.push(new PowerUp())
     Game.powerUpTimer = 0
@@ -653,8 +645,6 @@ function render() {
   const maxScore = parseInt(localStorage.getItem('gameScore')) || 0
   ctx.fillStyle = 'white'
   ctx.font = `20px '${Game.font}'`
-  ctx.textAlign = 'start'
-  ctx.textBaseline = 'alphabetic'
   ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 20, 40)
 
   // Lives
@@ -664,17 +654,17 @@ function render() {
   // Show power-up status
   let uiLine = 90
   if (Game.player.shieldTimer > 0) {
-    ctx.font = `12px '${Game.font}'`
+    ctx.font = `15px '${Game.font}'`
     ctx.fillText(`🛡️ ${Math.ceil(Game.player.shieldTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.doubleShootTimer > 0) {
-    ctx.font = `12px '${Game.font}'`
+    ctx.font = `15px '${Game.font}'`
     ctx.fillText(`🔫🔫 ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.bombs > 0) {
-    ctx.font = `12px '${Game.font}'`
+    ctx.font = `15px '${Game.font}'`
     ctx.fillText(`💣 ${Game.player.bombs}`, 20, uiLine)
   }
 
