@@ -178,19 +178,7 @@ class Player {
       bullet.active = false
     })
     
-    // Play explosion sound
     play('explosion')
-    
-    // Create screen-wide explosion effect
-    for (let i = 0; i < 50; i++) {
-      const x = Math.random() * Game.width
-      const y = Math.random() * Game.height
-      const vx = (Math.random() - 0.5) * 400
-      const vy = (Math.random() - 0.5) * 400
-      Game.particles.push(new Particle(x, y, vx, vy, 0.8, 'rgba(255,100,0,1)'))
-    }
-    
-    return true
   }
 }
 
