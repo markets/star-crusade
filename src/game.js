@@ -410,11 +410,17 @@ class PowerUp {
       emoji = '🪙'
     }
     
+    // Save canvas context state before modifying text properties
+    ctx.save()
+    
     // Render emoji
     ctx.font = `${this.width}px Arial`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
+    
+    // Restore canvas context state to prevent affecting other text rendering
+    ctx.restore()
   }
 }
 
