@@ -27,6 +27,7 @@ const Game = {
   frameId: 0,
   spawnIntervalId: 0,
   powerUpTimer: 0,
+  timeFreeze: 0, // seconds of time freeze effect
   font: 'Press Start 2P',
   playerImage: new Image(),
   enemyTemplates: ['assets/enemy1.svg', 'assets/enemy2.svg', 'assets/enemy3.svg', 'assets/enemy4.svg', 'assets/enemy5.svg'],
@@ -125,6 +126,9 @@ class Player {
     this.invuln = Math.max(0, this.invuln - dt)
     this.shieldTimer = Math.max(0, this.shieldTimer - dt)
     this.doubleShootTimer = Math.max(0, this.doubleShootTimer - dt)
+    
+    // Update global time freeze timer
+    Game.timeFreeze = Math.max(0, Game.timeFreeze - dt)
 
     // Shooting
     if (this.isShooting && this.fireCooldown === 0) {
@@ -352,18 +356,20 @@ class PowerUp {
   constructor() {
     this.speed = 120 // px/s, slower than enemies
     this.active = true
-    // Randomly choose power-up type: 20% each type (5 types)
+    // Randomly choose power-up type: ~16.7% each type (6 types)
     const rand = Math.random()
-    if (rand < 0.2) {
+    if (rand < 0.167) {
       this.type = 'shield'
-    } else if (rand < 0.4) {
+    } else if (rand < 0.334) {
       this.type = 'double_shoot'
-    } else if (rand < 0.6) {
+    } else if (rand < 0.501) {
       this.type = 'bomb'
-    } else if (rand < 0.8) {
+    } else if (rand < 0.668) {
       this.type = 'live'
-    } else {
+    } else if (rand < 0.835) {
       this.type = 'score'
+    } else {
+      this.type = 'time_freeze'
     }
     this.height = 25
     this.width = this.type == 'double_shoot' ? 40 : 25
@@ -399,6 +405,8 @@ class PowerUp {
       emoji = '♥️'
     } else if (this.type === 'score') {
       emoji = '🎖️'
+    } else if (this.type === 'time_freeze') {
+      emoji = '⏰'
     }
     
     ctx.font = `25px Arial`
@@ -425,6 +433,9 @@ class PowerUp {
     } else if (this.type === 'score') {
       // Give player 100 extra points
       Game.score += 100
+    } else if (this.type === 'time_freeze') {
+      // Grant 2.5 seconds of time freeze (freezes all enemies and their bullets)
+      Game.timeFreeze += 2.5
     }
   }
 }
@@ -496,6 +507,7 @@ function restart() {
   Game.paused = false
   Game.backgroundY = 0
   Game.powerUpTimer = 0
+  Game.timeFreeze = 0
 
   // Create new player
   Game.player = new Player()
@@ -557,9 +569,14 @@ function spawnPowerUps(dt) {
 
 function update(dt) {
   Game.player.update(dt)
-  Game.enemies.forEach((e) => e.update(dt))
+  
+  // Only update enemies and enemy bullets if time freeze is not active
+  if (Game.timeFreeze <= 0) {
+    Game.enemies.forEach((e) => e.update(dt))
+    Game.enemyBullets.forEach((b) => b.update(dt))
+  }
+  
   Game.bullets.forEach((b) => b.update(dt))
-  Game.enemyBullets.forEach((b) => b.update(dt))
   Game.particles.forEach((p) => p.update(dt))
   Game.powerUps.forEach((p) => p.update(dt))
 
@@ -687,6 +704,11 @@ function render() {
   if (Game.player.doubleShootTimer > 0) {
     ctx.font = `15px '${Game.font}'`
     ctx.fillText(`🔫🔫 ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
+    uiLine += 20
+  }
+  if (Game.timeFreeze > 0) {
+    ctx.font = `15px '${Game.font}'`
+    ctx.fillText(`⏰ ${Math.ceil(Game.timeFreeze)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.bombs > 0) {
