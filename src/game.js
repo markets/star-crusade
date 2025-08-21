@@ -402,6 +402,27 @@ class PowerUp {
     ctx.font = `${this.width}px Arial`
     ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
   }
+
+  hit() {
+    this.active = false
+
+    if (this.type === 'shield') {
+      // Grant 10 seconds of shield protection
+      Game.player.shieldTimer += 10.0
+    } else if (this.type === 'double_shoot') {
+      // Grant 10 seconds of double shooting
+      Game.player.doubleShootTimer += 10.0
+    } else if (this.type === 'bomb') {
+      // Give player a bomb
+      Game.player.bombs += 1
+    } else if (this.type === 'live') {
+      // Give player an extra life
+      Game.player.lives += 1
+    } else if (this.type === 'score') {
+      // Give player 100 extra points
+      Game.score += 100
+    }
+  }
 }
 
 // ============================================
@@ -412,15 +433,12 @@ function setupOptionsMenu() {
   const restartBtn = document.getElementById('restart-btn')
   const pauseBtn = document.getElementById('pause-btn')
 
-  // Sound button
   soundBtn.addEventListener('touchstart', (e) => { preventDefaults(e); toggleSound() })
   soundBtn.addEventListener('click', (e) => { preventDefaults(e); toggleSound() })
 
-  // Restart button
   restartBtn.addEventListener('touchstart', (e) => { preventDefaults(e); restart() })
   restartBtn.addEventListener('click', (e) => { preventDefaults(e); restart() })
 
-  // Pause button
   pauseBtn.addEventListener('touchstart', (e) => { preventDefaults(e); togglePause() })
   pauseBtn.addEventListener('click', (e) => { preventDefaults(e); togglePause() })
 }
@@ -430,26 +448,23 @@ function setupMobileControls() {
   const rightBtn = document.getElementById('right-btn')
   const shootBtn = document.getElementById('shoot-btn')
 
-  // Left
   leftBtn.addEventListener('touchstart', (e) => { preventDefaults(e); Game.player.isMovingLeft = true })
   leftBtn.addEventListener('touchend',   (e) => { preventDefaults(e); Game.player.isMovingLeft = false })
   leftBtn.addEventListener('mousedown',  (e) => { preventDefaults(e); Game.player.isMovingLeft = true })
   leftBtn.addEventListener('mouseup',    (e) => { preventDefaults(e); Game.player.isMovingLeft = false })
   leftBtn.addEventListener('mouseleave', (e) => { Game.player.isMovingLeft = false })
 
-  // Right
   rightBtn.addEventListener('touchstart', (e) => { preventDefaults(e); Game.player.isMovingRight = true })
   rightBtn.addEventListener('touchend',   (e) => { preventDefaults(e); Game.player.isMovingRight = false })
   rightBtn.addEventListener('mousedown',  (e) => { preventDefaults(e); Game.player.isMovingRight = true })
   rightBtn.addEventListener('mouseup',    (e) => { preventDefaults(e); Game.player.isMovingRight = false })
   rightBtn.addEventListener('mouseleave', (e) => { Game.player.isMovingRight = false })
 
-  // Shoot (hold to autofire)
   shootBtn.addEventListener('touchstart', (e) => { preventDefaults(e); Game.player.isShooting = true })
   shootBtn.addEventListener('touchend',   (e) => { preventDefaults(e); Game.player.isShooting = false })
   shootBtn.addEventListener('mousedown',  (e) => { preventDefaults(e); Game.player.isShooting = true })
   shootBtn.addEventListener('mouseup',    (e) => { preventDefaults(e); Game.player.isShooting = false })
-  shootBtn.addEventListener('mouseleave', () => { Game.player.isShooting = false })
+  shootBtn.addEventListener('mouseleave', (e) => { Game.player.isShooting = false })
 }
 
 function restart() {
@@ -473,6 +488,7 @@ function restart() {
   // Reset game state variables
   Game.score = 0
   Game.newMaxScore = false
+  Game.gameOver = false
   Game.paused = false
   Game.backgroundY = 0
   Game.powerUpTimer = 0
@@ -598,24 +614,7 @@ function update(dt) {
     if (!p.active) continue
 
     if (collision({ x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height }, p)) {
-      p.active = false
-      
-      if (p.type === 'shield') {
-        // Grant 10 seconds of shield protection
-        Game.player.shieldTimer += 10.0
-      } else if (p.type === 'double_shoot') {
-        // Grant 10 seconds of double shooting
-        Game.player.doubleShootTimer += 10.0
-      } else if (p.type === 'bomb') {
-        // Give player a bomb
-        Game.player.bombs += 1
-      } else if (p.type === 'live') {
-        // Give player an extra life
-        Game.player.lives += 1
-      } else if (p.type === 'score') {
-        // Give player 100 extra points
-        Game.score += 100
-      }
+      p.hit()
       
       // Play achievement sound for power-up collection
       play('achievement')
@@ -756,10 +755,7 @@ function start() {
   // Create player
   Game.player = new Player()
 
-  // Spawn enemies loop
-  if (Game.spawnIntervalId) clearInterval(Game.spawnIntervalId)
-  Game.spawnIntervalId = setInterval(spawnEnemies, 1000)
-
+  // Keywords events
   document.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowLeft') Game.player.isMovingLeft = true
     if (event.key === 'ArrowRight') Game.player.isMovingRight = true
@@ -787,6 +783,10 @@ function start() {
 
   // Setup options menu
   setupOptionsMenu()
+
+  // Spawn enemies loop
+  if (Game.spawnIntervalId) clearInterval(Game.spawnIntervalId)
+  Game.spawnIntervalId = setInterval(spawnEnemies, 1000)
 
   // Start game loop (delta time)
   Game.lastFrameTime = performance.now()
