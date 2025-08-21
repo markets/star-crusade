@@ -405,8 +405,6 @@ class PowerUp {
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
-    ctx.strokeStyle = 'blue';
-    ctx.strokeRect(this.x, this.y, this.width, this.height);
   }
 
   hit() {
