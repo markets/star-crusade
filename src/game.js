@@ -53,11 +53,14 @@ function randomColor() {
   return `rgb(${r},${g},${b})`
 }
 
-function collision(a, b) {
-  return (a.x < b.x + b.width &&
-          a.x + a.width > b.x &&
-          a.y < b.y + b.height &&
-          a.y + a.height > b.y)
+// Collision detection with optional offset
+// Negative offset = more lenient collision (larger hit areas)
+// Positive offset = more restrictive collision (smaller hit areas)
+function collision(a, b, offset = 0) {
+  return (a.x < b.x + b.width - offset &&
+          a.x + a.width > b.x + offset &&
+          a.y < b.y + b.height - offset &&
+          a.y + a.height > b.y + offset)
 }
 
 function play(sound, volume = 0.2) {
@@ -569,7 +572,7 @@ function update(dt) {
     for (let ei = 0; ei < Game.enemies.length; ei++) {
       const e = Game.enemies[ei]
       if (!e.active) continue
-      if (collision(b, e)) {
+      if (collision(b, e, -3)) {
         b.active = false
         e.active = false
         Game.score += 10
@@ -584,7 +587,7 @@ function update(dt) {
   for (let bi = 0; bi < Game.enemyBullets.length; bi++) {
     const b = Game.enemyBullets[bi]
     if (!b.active) continue
-    if (collision(b, { x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height })) {
+    if (collision(b, { x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height }, 2)) {
       b.active = false
       spawnHitParticles(Game.player.x + Game.player.width / 2, Game.player.y + Game.player.height / 2, 8)
       Game.player.hit()
@@ -599,7 +602,7 @@ function update(dt) {
   for (const e of Game.enemies) {
     if (!e.active) continue
 
-    if (collision({ x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height }, e)) {
+    if (collision({ x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height }, e, 2)) {
       e.active = false
       spawnHitParticles(Game.player.x + Game.player.width / 2, Game.player.y + Game.player.height / 2, 14)
       Game.player.hit()
@@ -613,7 +616,7 @@ function update(dt) {
   for (const p of Game.powerUps) {
     if (!p.active) continue
 
-    if (collision({ x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height }, p)) {
+    if (collision({ x: Game.player.x, y: Game.player.y, width: Game.player.width, height: Game.player.height }, p, -2)) {
       p.hit()
       
       // Play achievement sound for power-up collection
