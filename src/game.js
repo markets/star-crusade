@@ -405,9 +405,9 @@ class PowerUp {
       emoji = '🎖️'
     }
     
-    // Render emoji using consistent size for visual uniformity
+    // Render emoji using consistent size and positioning for visual uniformity
     ctx.font = `${this.renderSize}px Arial`
-    ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
+    ctx.fillText(emoji, this.x + this.renderSize / 2, this.y + this.renderSize / 2)
   }
 
   hit() {
