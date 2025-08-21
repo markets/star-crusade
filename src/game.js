@@ -54,8 +54,8 @@ function randomColor() {
 }
 
 // Collision detection with optional offset
-// Negative offset = more lenient collision (larger hit areas)
-// Positive offset = more restrictive collision (smaller hit areas)
+// Negative offset = larger hit areas
+// Positive offset = smaller hit areas
 function collision(a, b, offset = 0) {
   return (a.x < b.x + b.width - offset &&
           a.x + a.width > b.x + offset &&
@@ -350,7 +350,6 @@ class Particle {
 
 class PowerUp {
   constructor() {
-    this.height = 25
     this.speed = 120 // px/s, slower than enemies
     this.active = true
     // Randomly choose power-up type: 20% each type (5 types)
@@ -366,11 +365,8 @@ class PowerUp {
     } else {
       this.type = 'score'
     }
-    
-    // Set width based on type - double shoot is wider due to two emojis (for collision)
-    this.width = this.type === 'double_shoot' ? 40 : 25
-    // Render size is consistent for all power-ups for visual uniformity
-    this.renderSize = 25
+    this.height = 25
+    this.width = this.type == 'double_shoot' ? 40 : 25
     this.x = Math.random() * (Game.width - this.width)
     this.y = -this.height
   }
@@ -405,15 +401,12 @@ class PowerUp {
       emoji = '🎖️'
     }
     
-    // Render emoji using consistent size and positioning for visual uniformity
-    ctx.font = `${this.renderSize}px Arial`
+    ctx.font = `25px Arial`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
-    
-    // Reset text alignment to default
-    ctx.textAlign = 'start'
-    ctx.textBaseline = 'alphabetic'
+    ctx.strokeStyle = 'blue';
+    ctx.strokeRect(this.x, this.y, this.width, this.height);
   }
 
   hit() {
@@ -677,6 +670,7 @@ function render() {
 
   // HUD
   const maxScore = parseInt(localStorage.getItem('gameScore')) || 0
+  ctx.textAlign = 'start'
   ctx.fillStyle = 'white'
   ctx.font = `20px '${Game.font}'`
   ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 20, 40)
