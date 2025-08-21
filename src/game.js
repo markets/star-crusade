@@ -146,10 +146,10 @@ class Player {
         Game.bullets.push(new Bullet(centerX, bulletY, 'triple', 0)) // 0 degrees
         
         // Left bullet (angled left)
-        Game.bullets.push(new Bullet(centerX - 15, bulletY, 'triple', -20)) // -20 degrees
+        Game.bullets.push(new Bullet(centerX - 15, bulletY, 'triple', -15)) // -15 degrees
         
         // Right bullet (angled right) 
-        Game.bullets.push(new Bullet(centerX + 15, bulletY, 'triple', 20)) // +20 degrees
+        Game.bullets.push(new Bullet(centerX + 15, bulletY, 'triple', 15)) // +15 degrees
         
       } else if (this.doubleShootTimer > 0) {
         // Double fire rate during double shoot
@@ -299,7 +299,7 @@ class Enemy {
 
 class Bullet {
   constructor(x, y, type = 'normal', angle = 0) {
-    this.width = type === 'double' ? 8 : 5
+    this.width = type === 'double' ? 8 : (type === 'triple' ? 6 : 5)
     this.height = 10
     this.x = x - this.width / 2
     this.y = y - this.height
@@ -455,7 +455,7 @@ class PowerUp {
     } else if (this.type === 'score') {
       emoji = '🎖️'
     } else if (this.type === 'triple_shoot') {
-      emoji = '⚡'
+      emoji = '🔱'
     } else if (this.type === 'bonus_score') {
       emoji = '🏆'
     }
@@ -757,7 +757,7 @@ function render() {
   }
   if (Game.player.tripleShootTimer > 0) {
     ctx.font = `15px '${Game.font}'`
-    ctx.fillText(`⚡ ${Math.ceil(Game.player.tripleShootTimer)}s`, 20, uiLine)
+    ctx.fillText(`🔱 ${Math.ceil(Game.player.tripleShootTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.bombs > 0) {
