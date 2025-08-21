@@ -452,8 +452,46 @@ function setupMobileControls() {
   shootBtn.addEventListener('mouseleave', () => { Game.player.isShooting = false })
 }
 
+function resetGameState() {
+  // Clear all intervals and animation frames
+  if (Game.spawnIntervalId) {
+    clearInterval(Game.spawnIntervalId)
+    Game.spawnIntervalId = 0
+  }
+  if (Game.frameId) {
+    cancelAnimationFrame(Game.frameId)
+    Game.frameId = 0
+  }
+
+  // Reset game state arrays
+  Game.enemies = []
+  Game.bullets = []
+  Game.enemyBullets = []
+  Game.particles = []
+  Game.powerUps = []
+
+  // Reset game state variables
+  Game.score = 0
+  Game.newMaxScore = false
+  Game.gameOver = false
+  Game.gameOverSfxPlayed = false
+  Game.paused = false
+  Game.backgroundY = 0
+  Game.powerUpTimer = 0
+
+  // Create new player
+  Game.player = new Player()
+
+  // Restart spawn enemies loop
+  Game.spawnIntervalId = setInterval(spawnEnemies, 1000)
+
+  // Restart game loop
+  Game.lastFrameTime = performance.now()
+  Game.frameId = requestAnimationFrame(gameLoop)
+}
+
 function restart() {
-  location.reload()
+  resetGameState()
 }
 
 function togglePause() {
