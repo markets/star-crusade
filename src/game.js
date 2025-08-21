@@ -619,6 +619,7 @@ function update(dt) {
       
       // Play achievement sound for power-up collection
       play('achievement')
+
       // Spawn some particles for visual feedback
       spawnHitParticles(p.x + p.width / 2, p.y + p.height / 2, 8)
     }
