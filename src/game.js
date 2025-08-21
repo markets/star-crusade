@@ -34,6 +34,56 @@ const Game = {
 }
 
 // ============================================
+// POWER-UP CONFIGURATION
+// ============================================
+const PowerUpConfig = {
+  // Regular frequency power-ups (15% each)
+  regularFrequency: ['shield', 'double_shoot', 'live', 'score'],
+  
+  // Low frequency power-ups (12.5% each)
+  lowFrequency: ['bomb', 'triple_shoot', 'bonus_score'],
+  
+  // Power-up properties
+  types: {
+    shield: {
+      emoji: '🛡️',
+      width: 25,
+      effect: (player) => { player.shieldTimer += 10.0 }
+    },
+    double_shoot: {
+      emoji: '🔫🔫',
+      width: 40,
+      effect: (player) => { player.doubleShootTimer += 10.0 }
+    },
+    bomb: {
+      emoji: '💣',
+      width: 25,
+      effect: (player) => { player.bombs += 1 }
+    },
+    live: {
+      emoji: '♥️',
+      width: 25,
+      effect: (player) => { player.lives += 1 }
+    },
+    score: {
+      emoji: '🎖️',
+      width: 25,
+      effect: () => { Game.score += 50 }
+    },
+    triple_shoot: {
+      emoji: '🔱',
+      width: 25,
+      effect: (player) => { player.tripleShootTimer += 10.0 }
+    },
+    bonus_score: {
+      emoji: '🏆',
+      width: 25,
+      effect: () => { Game.score += 100 }
+    }
+  }
+}
+
+// ============================================
 // UTILITY FUNCTIONS
 // ============================================
 function clamp(v, a, b) {
@@ -400,28 +450,28 @@ class PowerUp {
   constructor() {
     this.speed = 120 // px/s, slower than enemies
     this.active = true
-    // Randomly choose power-up type with different probabilities
-    // Most power-ups: 15% each 
-    // Bomb, triple_shoot, bonus_score: 12.5% each (less frequent)
-    // Live: 17.5% (gets the extra 2.5%)
+    
+    // Choose power-up type using frequency arrays
+    // Regular frequency: 15% each (60% total)
+    // Low frequency: 12.5% each (37.5% total)
+    // Extra 2.5% goes to 'live' to make it 17.5%
     const rand = Math.random()
-    if (rand < 0.15) {
-      this.type = 'shield'
-    } else if (rand < 0.30) {
-      this.type = 'double_shoot'
-    } else if (rand < 0.425) {
-      this.type = 'bomb'
-    } else if (rand < 0.60) {
-      this.type = 'live'
-    } else if (rand < 0.75) {
-      this.type = 'score'
-    } else if (rand < 0.875) {
-      this.type = 'triple_shoot'
+    
+    if (rand < 0.60) {
+      // Regular frequency power-ups (15% each)
+      const regularIndex = Math.floor(rand / 0.15)
+      this.type = PowerUpConfig.regularFrequency[regularIndex]
+    } else if (rand < 0.975) {
+      // Low frequency power-ups (12.5% each)
+      const lowIndex = Math.floor((rand - 0.60) / 0.125)
+      this.type = PowerUpConfig.lowFrequency[lowIndex]
     } else {
-      this.type = 'bonus_score'
+      // Extra 2.5% goes to 'live'
+      this.type = 'live'
     }
+    
     this.height = 25
-    this.width = this.type == 'double_shoot' ? 40 : 25
+    this.width = PowerUpConfig.types[this.type].width
     this.x = Math.random() * (Game.width - this.width)
     this.y = -this.height
   }
@@ -441,55 +491,20 @@ class PowerUp {
     if (Math.floor(performance.now() / 200) % 2 === 0) return
     
     const ctx = Game.ctx
-    let emoji = ''
-    
-    // Map power-up types to emojis
-    if (this.type === 'shield') {
-      emoji = '🛡️'
-    } else if (this.type === 'double_shoot') {
-      emoji = '🔫🔫'
-    } else if (this.type === 'bomb') {
-      emoji = '💣'
-    } else if (this.type === 'live') {
-      emoji = '♥️'
-    } else if (this.type === 'score') {
-      emoji = '🎖️'
-    } else if (this.type === 'triple_shoot') {
-      emoji = '🔱'
-    } else if (this.type === 'bonus_score') {
-      emoji = '🏆'
-    }
+    const config = PowerUpConfig.types[this.type]
     
     ctx.font = '25px Arial'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
+    ctx.fillText(config.emoji, this.x + this.width / 2, this.y + this.height / 2)
   }
 
   hit() {
     this.active = false
-
-    if (this.type === 'shield') {
-      // Grant 10 seconds of shield protection
-      Game.player.shieldTimer += 10.0
-    } else if (this.type === 'double_shoot') {
-      // Grant 10 seconds of double shooting
-      Game.player.doubleShootTimer += 10.0
-    } else if (this.type === 'bomb') {
-      // Give player a bomb
-      Game.player.bombs += 1
-    } else if (this.type === 'live') {
-      // Give player an extra life
-      Game.player.lives += 1
-    } else if (this.type === 'score') {
-      // Give player 50 extra points
-      Game.score += 50
-    } else if (this.type === 'triple_shoot') {
-      // Grant 10 seconds of triple shoot shooting
-      Game.player.tripleShootTimer += 10.0
-    } else if (this.type === 'bonus_score') {
-      // Give player 100 extra points
-      Game.score += 100
+    
+    const config = PowerUpConfig.types[this.type]
+    if (config && config.effect) {
+      config.effect(Game.player)
     }
   }
 }
