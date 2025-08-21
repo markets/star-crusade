@@ -27,7 +27,6 @@ const Game = {
   frameId: 0,
   spawnIntervalId: 0,
   powerUpTimer: 0,
-  timeFreeze: 0, // seconds of time freeze effect
   font: 'Press Start 2P',
   playerImage: new Image(),
   enemyTemplates: ['assets/enemy1.svg', 'assets/enemy2.svg', 'assets/enemy3.svg', 'assets/enemy4.svg', 'assets/enemy5.svg'],
@@ -107,6 +106,9 @@ class Player {
     // Double shooting power-up
     this.doubleShootTimer = 0 // seconds of double shooting
     
+    // Triple spread shooting power-up  
+    this.tripleSpreadTimer = 0 // seconds of triple spread shooting
+    
     // Bomb power-up inventory
     this.bombs = 0 // number of bombs player has
   }
@@ -126,23 +128,41 @@ class Player {
     this.invuln = Math.max(0, this.invuln - dt)
     this.shieldTimer = Math.max(0, this.shieldTimer - dt)
     this.doubleShootTimer = Math.max(0, this.doubleShootTimer - dt)
-    
-    // Update global time freeze timer
-    Game.timeFreeze = Math.max(0, Game.timeFreeze - dt)
+    this.tripleSpreadTimer = Math.max(0, this.tripleSpreadTimer - dt)
 
     // Shooting
     if (this.isShooting && this.fireCooldown === 0) {
-      // Double fire rate during double shoot
-      const currentFireRate = this.doubleShootTimer > 0 ? this.fireRate * 2 : this.fireRate
-      this.fireCooldown = 1 / currentFireRate
-      
-      if (this.doubleShootTimer > 0) {
+      // Triple spread shot has highest priority, then double shoot, then normal
+      if (this.tripleSpreadTimer > 0) {
+        // Triple spread shot: fire rate similar to double shoot but with 3 bullets in a fan pattern
+        const currentFireRate = this.fireRate * 2
+        this.fireCooldown = 1 / currentFireRate
+        
+        // Fire three bullets: center, left angle (-20 degrees), right angle (+20 degrees)
+        const centerX = this.x + this.width / 2
+        const bulletY = this.y
+        
+        // Center bullet (straight ahead)
+        Game.bullets.push(new Bullet(centerX, bulletY, false, 0)) // 0 degrees
+        
+        // Left bullet (angled left)
+        Game.bullets.push(new Bullet(centerX - 15, bulletY, false, -20)) // -20 degrees
+        
+        // Right bullet (angled right) 
+        Game.bullets.push(new Bullet(centerX + 15, bulletY, false, 20)) // +20 degrees
+        
+      } else if (this.doubleShootTimer > 0) {
+        // Double fire rate during double shoot
+        const currentFireRate = this.fireRate * 2
+        this.fireCooldown = 1 / currentFireRate
+        
         // Double shoot: fire two bullets side by side
         const bulletOffset = 30
         Game.bullets.push(new Bullet(this.x + this.width / 2 - bulletOffset / 2, this.y, true))
         Game.bullets.push(new Bullet(this.x + this.width / 2 + bulletOffset / 2, this.y, true))
       } else {
         // Normal shooting: single bullet
+        this.fireCooldown = 1 / this.fireRate
         Game.bullets.push(new Bullet(this.x + this.width / 2, this.y, false))
       }
       play('shoot')
@@ -278,7 +298,7 @@ class Enemy {
 }
 
 class Bullet {
-  constructor(x, y, isDoubleShoot = false) {
+  constructor(x, y, isDoubleShoot = false, angle = 0) {
     this.width = isDoubleShoot ? 8 : 5
     this.height = 10
     this.x = x - this.width / 2
@@ -286,18 +306,42 @@ class Bullet {
     this.speed = 980 // px/s
     this.active = true
     this.isDoubleShoot = isDoubleShoot // whether this bullet is from double shoot power-up
+    this.angle = angle // angle in degrees, 0 = straight up, negative = left, positive = right
+    
+    // Calculate velocity components based on angle
+    const angleRad = (angle * Math.PI) / 180
+    this.vx = Math.sin(angleRad) * this.speed // horizontal velocity
+    this.vy = -Math.cos(angleRad) * this.speed // vertical velocity (negative because up is negative Y)
   }
 
   update(dt) {
     if (!this.active) return
-    this.y -= this.speed * dt
-    if (this.y < -this.height) this.active = false
+    
+    if (this.angle === 0) {
+      // Straight bullet (original behavior)
+      this.y -= this.speed * dt
+    } else {
+      // Angled bullet
+      this.x += this.vx * dt
+      this.y += this.vy * dt
+    }
+    
+    // Remove bullet if it goes off screen
+    if (this.y < -this.height || this.x < -this.width || this.x > Game.width) {
+      this.active = false
+    }
   }
 
   render() {
     if (!this.active) return
-    // Yellow bullets for double shoot, white for normal
-    Game.ctx.fillStyle = this.isDoubleShoot ? 'yellow' : 'white'
+    // Yellow bullets for double shoot, cyan for triple spread, white for normal
+    if (this.isDoubleShoot) {
+      Game.ctx.fillStyle = 'yellow'
+    } else if (this.angle !== 0) {
+      Game.ctx.fillStyle = 'cyan' // Triple spread bullets
+    } else {
+      Game.ctx.fillStyle = 'white' // Normal bullets
+    }
     Game.ctx.fillRect(this.x, this.y, this.width, this.height)
   }
 }
@@ -356,20 +400,24 @@ class PowerUp {
   constructor() {
     this.speed = 120 // px/s, slower than enemies
     this.active = true
-    // Randomly choose power-up type: ~16.7% each type (6 types)
+    // Randomly choose power-up type with different probabilities
+    // Existing power-ups: 15% each (75% total)
+    // New power-ups: 12.5% each (25% total, less frequent as requested)
     const rand = Math.random()
-    if (rand < 0.167) {
+    if (rand < 0.15) {
       this.type = 'shield'
-    } else if (rand < 0.334) {
+    } else if (rand < 0.30) {
       this.type = 'double_shoot'
-    } else if (rand < 0.501) {
+    } else if (rand < 0.45) {
       this.type = 'bomb'
-    } else if (rand < 0.668) {
+    } else if (rand < 0.60) {
       this.type = 'live'
-    } else if (rand < 0.835) {
+    } else if (rand < 0.75) {
       this.type = 'score'
+    } else if (rand < 0.875) {
+      this.type = 'triple_spread'
     } else {
-      this.type = 'time_freeze'
+      this.type = 'bonus_score'
     }
     this.height = 25
     this.width = this.type == 'double_shoot' ? 40 : 25
@@ -405,8 +453,10 @@ class PowerUp {
       emoji = '♥️'
     } else if (this.type === 'score') {
       emoji = '🎖️'
-    } else if (this.type === 'time_freeze') {
-      emoji = '⏰'
+    } else if (this.type === 'triple_spread') {
+      emoji = '⚡'
+    } else if (this.type === 'bonus_score') {
+      emoji = '🏆'
     }
     
     ctx.font = `25px Arial`
@@ -433,9 +483,12 @@ class PowerUp {
     } else if (this.type === 'score') {
       // Give player 100 extra points
       Game.score += 100
-    } else if (this.type === 'time_freeze') {
-      // Grant 2.5 seconds of time freeze (freezes all enemies and their bullets)
-      Game.timeFreeze += 2.5
+    } else if (this.type === 'triple_spread') {
+      // Grant 10 seconds of triple spread shooting
+      Game.player.tripleSpreadTimer += 10.0
+    } else if (this.type === 'bonus_score') {
+      // Give player 200 extra points
+      Game.score += 200
     }
   }
 }
@@ -507,7 +560,6 @@ function restart() {
   Game.paused = false
   Game.backgroundY = 0
   Game.powerUpTimer = 0
-  Game.timeFreeze = 0
 
   // Create new player
   Game.player = new Player()
@@ -570,12 +622,8 @@ function spawnPowerUps(dt) {
 function update(dt) {
   Game.player.update(dt)
   
-  // Only update enemies and enemy bullets if time freeze is not active
-  if (Game.timeFreeze <= 0) {
-    Game.enemies.forEach((e) => e.update(dt))
-    Game.enemyBullets.forEach((b) => b.update(dt))
-  }
-  
+  Game.enemies.forEach((e) => e.update(dt))
+  Game.enemyBullets.forEach((b) => b.update(dt))
   Game.bullets.forEach((b) => b.update(dt))
   Game.particles.forEach((p) => p.update(dt))
   Game.powerUps.forEach((p) => p.update(dt))
@@ -706,9 +754,9 @@ function render() {
     ctx.fillText(`🔫🔫 ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
     uiLine += 20
   }
-  if (Game.timeFreeze > 0) {
+  if (Game.player.tripleSpreadTimer > 0) {
     ctx.font = `15px '${Game.font}'`
-    ctx.fillText(`⏰ ${Math.ceil(Game.timeFreeze)}s`, 20, uiLine)
+    ctx.fillText(`⚡ ${Math.ceil(Game.player.tripleSpreadTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.bombs > 0) {
