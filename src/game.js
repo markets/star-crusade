@@ -367,8 +367,10 @@ class PowerUp {
       this.type = 'score'
     }
     
-    // Set width based on type - double shoot is wider due to two emojis
+    // Set width based on type - double shoot is wider due to two emojis (for collision)
     this.width = this.type === 'double_shoot' ? 40 : 25
+    // Render size is consistent for all power-ups for visual uniformity
+    this.renderSize = 25
     this.x = Math.random() * (Game.width - this.width)
     this.y = -this.height
   }
@@ -403,8 +405,8 @@ class PowerUp {
       emoji = '🎖️'
     }
     
-    // Render emoji
-    ctx.font = `${this.width}px Arial`
+    // Render emoji using consistent size for visual uniformity
+    ctx.font = `${this.renderSize}px Arial`
     ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
   }
 
