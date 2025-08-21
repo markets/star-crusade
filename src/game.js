@@ -452,7 +452,7 @@ function setupMobileControls() {
   shootBtn.addEventListener('mouseleave', () => { Game.player.isShooting = false })
 }
 
-function resetGameState() {
+function restart() {
   // Clear all intervals and animation frames
   if (Game.spawnIntervalId) {
     clearInterval(Game.spawnIntervalId)
@@ -473,8 +473,6 @@ function resetGameState() {
   // Reset game state variables
   Game.score = 0
   Game.newMaxScore = false
-  Game.gameOver = false
-  Game.gameOverSfxPlayed = false
   Game.paused = false
   Game.backgroundY = 0
   Game.powerUpTimer = 0
@@ -486,12 +484,9 @@ function resetGameState() {
   Game.spawnIntervalId = setInterval(spawnEnemies, 1000)
 
   // Restart game loop
+  Game.interval = 0
   Game.lastFrameTime = performance.now()
   Game.frameId = requestAnimationFrame(gameLoop)
-}
-
-function restart() {
-  resetGameState()
 }
 
 function togglePause() {
@@ -515,8 +510,8 @@ function spawnEnemies() {
   Game.interval++
 
   // Difficulty scaling by elapsed "intervals"
-  let maxEnemies = Math.round(clamp(Game.interval / 10, 1, 30))
-  let maxSpeed = clamp(80 + Game.interval * 10, 80, 500) // px/s
+  let maxEnemies = Math.round(clamp(Game.interval / 10, 1, 25))
+  let maxSpeed = clamp(80 + Game.interval * 10, 80, 600) // px/s
   let maxSize = clamp(40 + Game.interval * 10, 40, 100)
 
   for (let i = 0; i < maxEnemies; i++) {
