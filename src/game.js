@@ -459,7 +459,7 @@ class PowerUp {
       emoji = '🏆'
     }
     
-    ctx.font = `25px Arial`
+    ctx.font = '25px Arial'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
