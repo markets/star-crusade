@@ -350,10 +350,7 @@ class Particle {
 
 class PowerUp {
   constructor() {
-    this.width = 25
     this.height = 25
-    this.x = Math.random() * (Game.width - this.width)
-    this.y = -this.height
     this.speed = 120 // px/s, slower than enemies
     this.active = true
     // Randomly choose power-up type: 20% each type (5 types)
@@ -369,6 +366,11 @@ class PowerUp {
     } else {
       this.type = 'score'
     }
+    
+    // Set width based on type - double shoot is wider due to two emojis
+    this.width = this.type === 'double_shoot' ? 40 : 25
+    this.x = Math.random() * (Game.width - this.width)
+    this.y = -this.height
   }
 
   update(dt) {
