@@ -407,7 +407,13 @@ class PowerUp {
     
     // Render emoji using consistent size and positioning for visual uniformity
     ctx.font = `${this.renderSize}px Arial`
-    ctx.fillText(emoji, this.x + this.renderSize / 2, this.y + this.renderSize / 2)
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
+    
+    // Reset text alignment to default
+    ctx.textAlign = 'start'
+    ctx.textBaseline = 'alphabetic'
   }
 
   hit() {
