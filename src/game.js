@@ -39,38 +39,31 @@ const Game = {
 const PowerUpConfig = {
   types: {
     shield: {
-      emoji: '🛡️',
-      width: 25,
+      icon: '🛡️',
       effect: (player) => { player.shieldTimer += 10.0 }
     },
     double_shoot: {
-      emoji: '🔫🔫',
-      width: 40,
+      icon: '🔫🔫',
       effect: (player) => { player.doubleShootTimer += 10.0 }
     },
     bomb: {
-      emoji: '💣',
-      width: 25,
+      icon: '💣',
       effect: (player) => { player.bombs += 1 }
     },
     live: {
-      emoji: '♥️',
-      width: 25,
+      icon: '♥️',
       effect: (player) => { player.lives += 1 }
     },
     score: {
-      emoji: '🎖️',
-      width: 25,
+      icon: '🎖️',
       effect: () => { Game.score += 50 }
     },
     triple_shoot: {
-      emoji: '🔱',
-      width: 25,
+      icon: '🔱',
       effect: (player) => { player.tripleShootTimer += 10.0 }
     },
     bonus_score: {
-      emoji: '🏆',
-      width: 25,
+      icon: '🏆',
       effect: () => { Game.score += 100 }
     }
   },
@@ -462,7 +455,7 @@ class PowerUp {
     }
     
     this.height = 25
-    this.width = PowerUpConfig.types[this.type].width
+    this.width = 25
     this.x = Math.random() * (Game.width - this.width)
     this.y = -this.height
   }
@@ -487,7 +480,7 @@ class PowerUp {
     ctx.font = '25px Arial'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(config.emoji, this.x + this.width / 2, this.y + this.height / 2)
+    ctx.fillText(config.icon, this.x + this.width / 2, this.y + this.height / 2)
   }
 
   hit() {
