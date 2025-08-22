@@ -37,49 +37,54 @@ const Game = {
 // POWER-UP CONFIGURATION
 // ============================================
 const PowerUpConfig = {
-  // Regular frequency power-ups (15% each)
-  regularFrequency: ['shield', 'double_shoot', 'live', 'score'],
-  
-  // Low frequency power-ups (12.5% each)
-  lowFrequency: ['bomb', 'triple_shoot', 'bonus_score'],
-  
-  // Power-up properties
   types: {
     shield: {
       emoji: '🛡️',
       width: 25,
+      frequency: 'normal',
       effect: (player) => { player.shieldTimer += 10.0 }
     },
     double_shoot: {
       emoji: '🔫🔫',
       width: 40,
+      frequency: 'normal',
       effect: (player) => { player.doubleShootTimer += 10.0 }
     },
     bomb: {
       emoji: '💣',
       width: 25,
+      frequency: 'low',
       effect: (player) => { player.bombs += 1 }
     },
     live: {
       emoji: '♥️',
       width: 25,
+      frequency: 'normal',
       effect: (player) => { player.lives += 1 }
     },
     score: {
       emoji: '🎖️',
       width: 25,
+      frequency: 'normal',
       effect: () => { Game.score += 50 }
     },
     triple_shoot: {
       emoji: '🔱',
       width: 25,
+      frequency: 'low',
       effect: (player) => { player.tripleShootTimer += 10.0 }
     },
     bonus_score: {
       emoji: '🏆',
       width: 25,
+      frequency: 'low',
       effect: () => { Game.score += 100 }
     }
+  },
+  
+  // Helper function to get power-ups by frequency
+  getByFrequency: function(frequency) {
+    return Object.keys(this.types).filter(type => this.types[type].frequency === frequency)
   }
 }
 
@@ -451,22 +456,28 @@ class PowerUp {
     this.speed = 120 // px/s, slower than enemies
     this.active = true
     
-    // Choose power-up type using frequency arrays
-    // Regular frequency: 15% each (60% total)
-    // Low frequency: 12.5% each (37.5% total)
-    // Extra 2.5% goes to 'live' to make it 17.5%
+    // Choose power-up type using automatic frequency system
+    const normalFrequencyTypes = PowerUpConfig.getByFrequency('normal')
+    const lowFrequencyTypes = PowerUpConfig.getByFrequency('low')
+    
+    const normalFrequencyRate = 15 // 15% each
+    const lowFrequencyRate = 12.5 // 12.5% each
+    
+    const totalNormalRate = normalFrequencyTypes.length * normalFrequencyRate / 100
+    const totalLowRate = lowFrequencyTypes.length * lowFrequencyRate / 100
+    
     const rand = Math.random()
     
-    if (rand < 0.60) {
-      // Regular frequency power-ups (15% each)
-      const regularIndex = Math.floor(rand / 0.15)
-      this.type = PowerUpConfig.regularFrequency[regularIndex]
-    } else if (rand < 0.975) {
-      // Low frequency power-ups (12.5% each)
-      const lowIndex = Math.floor((rand - 0.60) / 0.125)
-      this.type = PowerUpConfig.lowFrequency[lowIndex]
+    if (rand < totalNormalRate) {
+      // Normal frequency power-ups
+      const normalIndex = Math.floor(rand / (normalFrequencyRate / 100))
+      this.type = normalFrequencyTypes[normalIndex]
+    } else if (rand < totalNormalRate + totalLowRate) {
+      // Low frequency power-ups
+      const lowIndex = Math.floor((rand - totalNormalRate) / (lowFrequencyRate / 100))
+      this.type = lowFrequencyTypes[lowIndex]
     } else {
-      // Extra 2.5% goes to 'live'
+      // Remaining percentage goes to 'live' to make it slightly more frequent
       this.type = 'live'
     }
     
