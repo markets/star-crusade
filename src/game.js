@@ -605,7 +605,7 @@ function spawnPowerUps(dt) {
   Game.powerUpTimer += dt
   
   // Spawn a new power-up randomly every 10-20 seconds
-  const nextSpawnTime = randomInt(1, 2)
+  const nextSpawnTime = randomInt(10, 20)
   if (Game.powerUpTimer >= nextSpawnTime) {
     Game.powerUps.push(new PowerUp())
     Game.powerUpTimer = 0
