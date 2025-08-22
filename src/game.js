@@ -34,6 +34,46 @@ const Game = {
 }
 
 // ============================================
+// POWER-UP CONFIGURATION
+// ============================================
+const PowerUpConfig = {
+  types: {
+    shield: {
+      icon: '🛡️',
+      effect: (player) => { player.shieldTimer += 10.0 }
+    },
+    double_shoot: {
+      icon: '🔫🔫',
+      effect: (player) => { player.doubleShootTimer += 10.0 }
+    },
+    bomb: {
+      icon: '💣',
+      effect: (player) => { player.bombs += 1 }
+    },
+    live: {
+      icon: '♥️',
+      effect: (player) => { player.lives += 1 }
+    },
+    score: {
+      icon: '🎖️',
+      effect: () => { Game.score += 50 }
+    },
+    triple_shoot: {
+      icon: '🔱',
+      effect: (player) => { player.tripleShootTimer += 10.0 }
+    },
+    bonus_score: {
+      icon: '🏆',
+      effect: () => { Game.score += 100 }
+    }
+  },
+  
+  // Simple frequency arrays
+  normal: ['shield', 'double_shoot', 'live', 'score'],
+  low: ['bomb', 'triple_shoot', 'bonus_score']
+}
+
+// ============================================
 // UTILITY FUNCTIONS
 // ============================================
 function clamp(v, a, b) {
@@ -106,6 +146,9 @@ class Player {
     // Double shooting power-up
     this.doubleShootTimer = 0 // seconds of double shooting
     
+    // Triple shoot shooting power-up  
+    this.tripleShootTimer = 0 // seconds of triple shoot shooting
+    
     // Bomb power-up inventory
     this.bombs = 0 // number of bombs player has
   }
@@ -125,21 +168,37 @@ class Player {
     this.invuln = Math.max(0, this.invuln - dt)
     this.shieldTimer = Math.max(0, this.shieldTimer - dt)
     this.doubleShootTimer = Math.max(0, this.doubleShootTimer - dt)
+    this.tripleShootTimer = Math.max(0, this.tripleShootTimer - dt)
 
     // Shooting
     if (this.isShooting && this.fireCooldown === 0) {
-      // Double fire rate during double shoot
-      const currentFireRate = this.doubleShootTimer > 0 ? this.fireRate * 2 : this.fireRate
-      this.fireCooldown = 1 / currentFireRate
-      
-      if (this.doubleShootTimer > 0) {
+      // Triple shoot has highest priority, then double shoot, then normal
+      if (this.tripleShootTimer > 0) {
+        // Triple shoot: fire rate similar to double shoot but with 3 bullets
+        const currentFireRate = this.fireRate * 2
+        this.fireCooldown = 1 / currentFireRate
+        
+        // Fire three bullets: center, left angle (-10 degrees), right angle (+10 degrees)
+        const centerX = this.x + this.width / 2
+        const bulletY = this.y
+        
+        Game.bullets.push(new Bullet(centerX, bulletY, 'triple', 0))
+        Game.bullets.push(new Bullet(centerX - 10, bulletY, 'triple', -10))
+        Game.bullets.push(new Bullet(centerX + 10, bulletY, 'triple', 10))
+        
+      } else if (this.doubleShootTimer > 0) {
+        // Double fire rate during double shoot
+        const currentFireRate = this.fireRate * 2
+        this.fireCooldown = 1 / currentFireRate
+        
         // Double shoot: fire two bullets side by side
         const bulletOffset = 30
-        Game.bullets.push(new Bullet(this.x + this.width / 2 - bulletOffset / 2, this.y, true))
-        Game.bullets.push(new Bullet(this.x + this.width / 2 + bulletOffset / 2, this.y, true))
+        Game.bullets.push(new Bullet(this.x + this.width / 2 - bulletOffset / 2, this.y, 'double'))
+        Game.bullets.push(new Bullet(this.x + this.width / 2 + bulletOffset / 2, this.y, 'double'))
       } else {
         // Normal shooting: single bullet
-        Game.bullets.push(new Bullet(this.x + this.width / 2, this.y, false))
+        this.fireCooldown = 1 / this.fireRate
+        Game.bullets.push(new Bullet(this.x + this.width / 2, this.y, 'normal'))
       }
       play('shoot')
     }
@@ -274,26 +333,50 @@ class Enemy {
 }
 
 class Bullet {
-  constructor(x, y, isDoubleShoot = false) {
-    this.width = isDoubleShoot ? 8 : 5
+  constructor(x, y, type = 'normal', angle = 0) {
+    this.width = type === 'double' ? 8 : (type === 'triple' ? 6 : 5)
     this.height = 10
     this.x = x - this.width / 2
     this.y = y - this.height
     this.speed = 980 // px/s
     this.active = true
-    this.isDoubleShoot = isDoubleShoot // whether this bullet is from double shoot power-up
+    this.type = type // 'normal', 'double', or 'triple'
+    this.angle = angle // angle in degrees, 0 = straight up, negative = left, positive = right
+    
+    // Calculate velocity components based on angle
+    const angleRad = (angle * Math.PI) / 180
+    this.vx = Math.sin(angleRad) * this.speed // horizontal velocity
+    this.vy = -Math.cos(angleRad) * this.speed // vertical velocity (negative because up is negative Y)
   }
 
   update(dt) {
     if (!this.active) return
-    this.y -= this.speed * dt
-    if (this.y < -this.height) this.active = false
+    
+    if (this.angle === 0) {
+      // Straight bullet (original behavior)
+      this.y -= this.speed * dt
+    } else {
+      // Angled bullet
+      this.x += this.vx * dt
+      this.y += this.vy * dt
+    }
+    
+    // Remove bullet if it goes off screen
+    if (this.y < -this.height || this.x < -this.width || this.x > Game.width) {
+      this.active = false
+    }
   }
 
   render() {
     if (!this.active) return
-    // Yellow bullets for double shoot, white for normal
-    Game.ctx.fillStyle = this.isDoubleShoot ? 'yellow' : 'white'
+
+    if (this.type === 'double') {
+      Game.ctx.fillStyle = 'yellow'
+    } else if (this.type === 'triple') {
+      Game.ctx.fillStyle = 'cyan'
+    } else {
+      Game.ctx.fillStyle = 'white'
+    }
     Game.ctx.fillRect(this.x, this.y, this.width, this.height)
   }
 }
@@ -352,19 +435,18 @@ class PowerUp {
   constructor() {
     this.speed = 120 // px/s, slower than enemies
     this.active = true
-    // Randomly choose power-up type: 20% each type (5 types)
-    const rand = Math.random()
-    if (rand < 0.2) {
-      this.type = 'shield'
-    } else if (rand < 0.4) {
-      this.type = 'double_shoot'
-    } else if (rand < 0.6) {
-      this.type = 'bomb'
-    } else if (rand < 0.8) {
-      this.type = 'live'
+    
+    // Simple frequency selection: 60% normal, 40% low
+    const useNormalFrequency = Math.random() < 0.6
+    
+    if (useNormalFrequency) {
+      const randomIndex = Math.floor(Math.random() * PowerUpConfig.normal.length)
+      this.type = PowerUpConfig.normal[randomIndex]
     } else {
-      this.type = 'score'
+      const randomIndex = Math.floor(Math.random() * PowerUpConfig.low.length)
+      this.type = PowerUpConfig.low[randomIndex]
     }
+    
     this.height = 25
     this.width = this.type == 'double_shoot' ? 40 : 25
     this.x = Math.random() * (Game.width - this.width)
@@ -386,45 +468,20 @@ class PowerUp {
     if (Math.floor(performance.now() / 200) % 2 === 0) return
     
     const ctx = Game.ctx
-    let emoji = ''
+    const config = PowerUpConfig.types[this.type]
     
-    // Map power-up types to emojis
-    if (this.type === 'shield') {
-      emoji = '🛡️'
-    } else if (this.type === 'double_shoot') {
-      emoji = '🔫🔫'
-    } else if (this.type === 'bomb') {
-      emoji = '💣'
-    } else if (this.type === 'live') {
-      emoji = '♥️'
-    } else if (this.type === 'score') {
-      emoji = '🎖️'
-    }
-    
-    ctx.font = `25px Arial`
+    ctx.font = '25px Arial'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(emoji, this.x + this.width / 2, this.y + this.height / 2)
+    ctx.fillText(config.icon, this.x + this.width / 2, this.y + this.height / 2)
   }
 
   hit() {
     this.active = false
-
-    if (this.type === 'shield') {
-      // Grant 10 seconds of shield protection
-      Game.player.shieldTimer += 10.0
-    } else if (this.type === 'double_shoot') {
-      // Grant 10 seconds of double shooting
-      Game.player.doubleShootTimer += 10.0
-    } else if (this.type === 'bomb') {
-      // Give player a bomb
-      Game.player.bombs += 1
-    } else if (this.type === 'live') {
-      // Give player an extra life
-      Game.player.lives += 1
-    } else if (this.type === 'score') {
-      // Give player 100 extra points
-      Game.score += 100
+    
+    const config = PowerUpConfig.types[this.type]
+    if (config && config.effect) {
+      config.effect(Game.player)
     }
   }
 }
@@ -558,8 +615,8 @@ function spawnPowerUps(dt) {
 function update(dt) {
   Game.player.update(dt)
   Game.enemies.forEach((e) => e.update(dt))
-  Game.bullets.forEach((b) => b.update(dt))
   Game.enemyBullets.forEach((b) => b.update(dt))
+  Game.bullets.forEach((b) => b.update(dt))
   Game.particles.forEach((p) => p.update(dt))
   Game.powerUps.forEach((p) => p.update(dt))
 
@@ -667,10 +724,13 @@ function render() {
   Game.powerUps.forEach((p) => p.render())
 
   // HUD
-  const maxScore = parseInt(localStorage.getItem('gameScore')) || 0
   ctx.textAlign = 'start'
   ctx.fillStyle = 'white'
+  ctx.textBaseline = 'alphabetic'
   ctx.font = `20px '${Game.font}'`
+
+  // Score
+  const maxScore = parseInt(localStorage.getItem('gameScore')) || 0
   ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 20, 40)
 
   // Lives
@@ -686,7 +746,12 @@ function render() {
   }
   if (Game.player.doubleShootTimer > 0) {
     ctx.font = `15px '${Game.font}'`
-    ctx.fillText(`🔫🔫 ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
+    ctx.fillText(`${PowerUpConfig.types.double_shoot.icon} ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
+    uiLine += 20
+  }
+  if (Game.player.tripleShootTimer > 0) {
+    ctx.font = `15px '${Game.font}'`
+    ctx.fillText(`${PowerUpConfig.types.triple_shoot.icon} ${Math.ceil(Game.player.tripleShootTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.bombs > 0) {
