@@ -339,7 +339,7 @@ class Enemy {
 
 class Bullet {
   constructor(x, y, type = 'normal', angle = 0) {
-    this.width = type === 'double' ? 8 : (type === 'triple' ? 6 : 5)
+    this.width = type === 'double' ? 8 : 5
     this.height = 10
     this.x = x - this.width / 2
     this.y = y - this.height
@@ -751,12 +751,12 @@ function render() {
   }
   if (Game.player.doubleShootTimer > 0) {
     ctx.font = `15px '${Game.font}'`
-    ctx.fillText(`🔫🔫 ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
+    ctx.fillText(`${PowerUpConfig.types.double_shoot.icon} ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.tripleShootTimer > 0) {
     ctx.font = `15px '${Game.font}'`
-    ctx.fillText(`🔱 ${Math.ceil(Game.player.tripleShootTimer)}s`, 20, uiLine)
+    ctx.fillText(`${PowerUpConfig.types.triple_shoot.icon} ${Math.ceil(Game.player.tripleShootTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.bombs > 0) {
