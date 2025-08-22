@@ -455,7 +455,7 @@ class PowerUp {
     }
     
     this.height = 25
-    this.width = 25
+    this.width = this.type == 'double_shoot' ? 40 : 25
     this.x = Math.random() * (Game.width - this.width)
     this.y = -this.height
   }
