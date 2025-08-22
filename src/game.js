@@ -334,7 +334,7 @@ class Enemy {
 
 class Bullet {
   constructor(x, y, type = 'normal', angle = 0) {
-    this.width = type === 'double' ? 8 : 5
+    this.width = type === 'double' ? 8 : (type === 'triple' ? 6 : 5)
     this.height = 10
     this.x = x - this.width / 2
     this.y = y - this.height
