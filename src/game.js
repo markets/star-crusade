@@ -174,22 +174,17 @@ class Player {
     if (this.isShooting && this.fireCooldown === 0) {
       // Triple shoot has highest priority, then double shoot, then normal
       if (this.tripleShootTimer > 0) {
-        // Triple shoot: fire rate similar to double shoot but with 3 bullets in a fan pattern
+        // Triple shoot: fire rate similar to double shoot but with 3 bullets
         const currentFireRate = this.fireRate * 2
         this.fireCooldown = 1 / currentFireRate
         
-        // Fire three bullets: center, left angle (-20 degrees), right angle (+20 degrees)
+        // Fire three bullets: center, left angle (-10 degrees), right angle (+10 degrees)
         const centerX = this.x + this.width / 2
         const bulletY = this.y
         
-        // Center bullet (straight ahead)
-        Game.bullets.push(new Bullet(centerX, bulletY, 'triple', 0)) // 0 degrees
-        
-        // Left bullet (angled left)
-        Game.bullets.push(new Bullet(centerX - 15, bulletY, 'triple', -15)) // -15 degrees
-        
-        // Right bullet (angled right) 
-        Game.bullets.push(new Bullet(centerX + 15, bulletY, 'triple', 15)) // +15 degrees
+        Game.bullets.push(new Bullet(centerX, bulletY, 'triple', 0))
+        Game.bullets.push(new Bullet(centerX - 10, bulletY, 'triple', -10))
+        Game.bullets.push(new Bullet(centerX + 10, bulletY, 'triple', 10))
         
       } else if (this.doubleShootTimer > 0) {
         // Double fire rate during double shoot
@@ -374,13 +369,13 @@ class Bullet {
 
   render() {
     if (!this.active) return
-    // Yellow bullets for double shoot, cyan for triple shoot, white for normal
+
     if (this.type === 'double') {
       Game.ctx.fillStyle = 'yellow'
     } else if (this.type === 'triple') {
       Game.ctx.fillStyle = 'cyan'
     } else {
-      Game.ctx.fillStyle = 'white' // Normal bullets
+      Game.ctx.fillStyle = 'white'
     }
     Game.ctx.fillRect(this.x, this.y, this.width, this.height)
   }
@@ -445,11 +440,9 @@ class PowerUp {
     const useNormalFrequency = Math.random() < 0.6
     
     if (useNormalFrequency) {
-      // Pick random power-up from normal frequency array
       const randomIndex = Math.floor(Math.random() * PowerUpConfig.normal.length)
       this.type = PowerUpConfig.normal[randomIndex]
     } else {
-      // Pick random power-up from low frequency array
       const randomIndex = Math.floor(Math.random() * PowerUpConfig.low.length)
       this.type = PowerUpConfig.low[randomIndex]
     }
@@ -612,7 +605,7 @@ function spawnPowerUps(dt) {
   Game.powerUpTimer += dt
   
   // Spawn a new power-up randomly every 10-20 seconds
-  const nextSpawnTime = randomInt(10, 20)
+  const nextSpawnTime = randomInt(1, 2)
   if (Game.powerUpTimer >= nextSpawnTime) {
     Game.powerUps.push(new PowerUp())
     Game.powerUpTimer = 0
@@ -621,7 +614,6 @@ function spawnPowerUps(dt) {
 
 function update(dt) {
   Game.player.update(dt)
-  
   Game.enemies.forEach((e) => e.update(dt))
   Game.enemyBullets.forEach((b) => b.update(dt))
   Game.bullets.forEach((b) => b.update(dt))
@@ -732,10 +724,13 @@ function render() {
   Game.powerUps.forEach((p) => p.render())
 
   // HUD
-  const maxScore = parseInt(localStorage.getItem('gameScore')) || 0
   ctx.textAlign = 'start'
   ctx.fillStyle = 'white'
+  ctx.textBaseline = 'alphabetic'
   ctx.font = `20px '${Game.font}'`
+
+  // Score
+  const maxScore = parseInt(localStorage.getItem('gameScore')) || 0
   ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 20, 40)
 
   // Lives
