@@ -468,12 +468,12 @@ class PowerUp {
     if (Math.floor(performance.now() / 200) % 2 === 0) return
     
     const ctx = Game.ctx
-    const config = PowerUpConfig.types[this.type]
+    const icon = PowerUpConfig.types[this.type].icon
     
     ctx.font = '25px Arial'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(config.icon, this.x + this.width / 2, this.y + this.height / 2)
+    ctx.fillText(icon, this.x + this.width / 2, this.y + this.height / 2)
   }
 
   hit() {
@@ -736,13 +736,13 @@ function render() {
 
   // Lives
   ctx.font = `15px '${Game.font}'`
-  ctx.fillText(`♥️ ${Game.player.lives}`, 20, 70)
+  ctx.fillText(`${PowerUpConfig.types.live.icon} ${Game.player.lives}`, 20, 70)
 
   // Show power-up status
   let uiLine = 90
   if (Game.player.shieldTimer > 0) {
     ctx.font = `15px '${Game.font}'`
-    ctx.fillText(`🛡️ ${Math.ceil(Game.player.shieldTimer)}s`, 20, uiLine)
+    ctx.fillText(`${PowerUpConfig.types.shield.icon} ${Math.ceil(Game.player.shieldTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.doubleShootTimer > 0) {
@@ -757,7 +757,7 @@ function render() {
   }
   if (Game.player.bombs > 0) {
     ctx.font = `15px '${Game.font}'`
-    ctx.fillText(`💣 ${Game.player.bombs}`, 20, uiLine)
+    ctx.fillText(`${PowerUpConfig.types.bomb.icon} ${Game.player.bombs}`, 20, uiLine)
   }
 
   // Notify new record achieved
