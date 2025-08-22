@@ -550,6 +550,7 @@ function restart() {
   Game.score = 0
   Game.newMaxScore = false
   Game.gameOver = false
+  Game.gameOverSfxPlayed = false
   Game.paused = false
   Game.backgroundY = 0
   Game.powerUpTimer = 0
