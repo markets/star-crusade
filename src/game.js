@@ -508,6 +508,7 @@ function setupMobileControls() {
   const leftBtn = document.getElementById('left-btn')
   const rightBtn = document.getElementById('right-btn')
   const shootBtn = document.getElementById('shoot-btn')
+  const bombBtn = document.getElementById('bomb-btn')
 
   leftBtn.addEventListener('touchstart', (e) => { preventDefaults(e); Game.player.isMovingLeft = true })
   leftBtn.addEventListener('touchend',   (e) => { preventDefaults(e); Game.player.isMovingLeft = false })
@@ -526,6 +527,9 @@ function setupMobileControls() {
   shootBtn.addEventListener('mousedown',  (e) => { preventDefaults(e); Game.player.isShooting = true })
   shootBtn.addEventListener('mouseup',    (e) => { preventDefaults(e); Game.player.isShooting = false })
   shootBtn.addEventListener('mouseleave', (e) => { Game.player.isShooting = false })
+
+  bombBtn.addEventListener('touchstart', (e) => { preventDefaults(e); if (!Game.gameOver && !Game.paused) Game.player.useBomb() })
+  bombBtn.addEventListener('click', (e) => { preventDefaults(e); if (!Game.gameOver && !Game.paused) Game.player.useBomb() })
 }
 
 function restart() {
@@ -869,7 +873,7 @@ function resizeCanvas() {
   const aspectRatio = 1400 / 900
   const isMobile = window.innerWidth <= 768
   const maxW = isMobile ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
-  const maxH = isMobile ? window.innerHeight * 0.75 : Math.min(window.innerHeight * 0.7, 900)
+  const maxH = isMobile ? window.innerHeight * 0.975 : Math.min(window.innerHeight * 0.7, 900)
 
   const widthFromHeight = maxH * aspectRatio
   const heightFromWidth = maxW / aspectRatio
