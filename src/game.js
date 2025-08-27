@@ -868,8 +868,8 @@ function resizeCanvas() {
   // Maintain original aspect; scale to window; then fit backing store for HiDPI
   const aspectRatio = 1400 / 900
   const isMobile = window.innerWidth <= 768
-  const maxW = isMobile ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
-  const maxH = isMobile ? window.innerHeight * 0.75 : Math.min(window.innerHeight * 0.7, 900)
+  const maxW = isMobile ? window.innerWidth * 1.0 : Math.min(window.innerWidth * 0.95, 1400)
+  const maxH = isMobile ? Math.min(window.innerHeight * 0.99, 500) : Math.min(window.innerHeight * 0.7, 900)
 
   let cssW, cssH
   
