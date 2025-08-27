@@ -872,13 +872,27 @@ function resizeCanvas() {
   // Maintain original aspect; scale to window; then fit backing store for HiDPI
   const aspectRatio = 1400 / 900
   const isMobile = window.innerWidth <= 768
-  const maxW = isMobile ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
-  const maxH = isMobile ? window.innerHeight * 0.975 : Math.min(window.innerHeight * 0.7, 900)
+  const maxW = isMobile ? window.innerWidth * 1.0 : Math.min(window.innerWidth * 0.95, 1400)
+  const maxH = isMobile ? window.innerHeight * 0.99 : Math.min(window.innerHeight * 0.7, 900)
 
-  const widthFromHeight = maxH * aspectRatio
-  const heightFromWidth = maxW / aspectRatio
-  const cssW = Math.floor(widthFromHeight <= maxW ? widthFromHeight : maxW)
-  const cssH = Math.floor(heightFromWidth <= maxH ? heightFromWidth : maxH)
+  let cssW, cssH
+  
+  if (isMobile) {
+    // On mobile, prioritize using available height while keeping reasonable proportions
+    cssH = Math.floor(maxH)
+    cssW = Math.floor(Math.min(maxW, cssH * aspectRatio))
+    // If width constraint forces height to be much smaller, adjust aspect ratio slightly
+    if (cssW < maxW && cssH < maxH * 0.8) {
+      cssW = Math.floor(maxW)
+      cssH = Math.floor(cssW / aspectRatio)
+    }
+  } else {
+    // Desktop: maintain strict aspect ratio
+    const widthFromHeight = maxH * aspectRatio
+    const heightFromWidth = maxW / aspectRatio
+    cssW = Math.floor(widthFromHeight <= maxW ? widthFromHeight : maxW)
+    cssH = Math.floor(heightFromWidth <= maxH ? heightFromWidth : maxH)
+  }
 
   // Update CSS size
   const canvas = Game.canvas
