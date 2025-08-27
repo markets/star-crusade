@@ -45,15 +45,8 @@ canvas {
 #options {
   margin-top: 30px;
   display: flex;
-  gap: 15px;
+  gap: 20px;
   justify-content: center;
-  align-items: center;
-}
-
-.control-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
 }
 
 #footer {
