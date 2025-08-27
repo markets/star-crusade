@@ -221,7 +221,7 @@ class Player {
   }
 
   useBomb() {
-    if (this.bombs <= 0) return false
+    if (Game.gameOver || Game.paused || this.bombs <= 0) return false
     
     this.bombs -= 1
     
@@ -528,8 +528,8 @@ function setupMobileControls() {
   shootBtn.addEventListener('mouseup',    (e) => { preventDefaults(e); Game.player.isShooting = false })
   shootBtn.addEventListener('mouseleave', (e) => { Game.player.isShooting = false })
 
-  bombBtn.addEventListener('touchstart', (e) => { preventDefaults(e); if (!Game.gameOver && !Game.paused) Game.player.useBomb() })
-  bombBtn.addEventListener('click', (e) => { preventDefaults(e); if (!Game.gameOver && !Game.paused) Game.player.useBomb() })
+  bombBtn.addEventListener('touchstart', (e) => { preventDefaults(e); Game.player.useBomb() })
+  bombBtn.addEventListener('click', (e) => { preventDefaults(e); Game.player.useBomb() })
 }
 
 function restart() {
@@ -838,11 +838,7 @@ function start() {
     if (event.key === 's') toggleSound()
     if (event.key === 'r') restart()
     if (event.key === 'p') togglePause()
-    if (event.key === 'b') {
-      if (!Game.gameOver && !Game.paused) {
-        Game.player.useBomb()
-      }
-    }
+    if (event.key === 'b') Game.player.useBomb()
 
     play("soundtrack", 0.25)
   })
@@ -872,8 +868,8 @@ function resizeCanvas() {
   // Maintain original aspect; scale to window; then fit backing store for HiDPI
   const aspectRatio = 1400 / 900
   const isMobile = window.innerWidth <= 768
-  const maxW = isMobile ? window.innerWidth * 1.0 : Math.min(window.innerWidth * 0.95, 1400)
-  const maxH = isMobile ? window.innerHeight * 0.99 : Math.min(window.innerHeight * 0.7, 900)
+  const maxW = isMobile ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
+  const maxH = isMobile ? window.innerHeight * 0.75 : Math.min(window.innerHeight * 0.7, 900)
 
   let cssW, cssH
   

@@ -15,9 +15,7 @@ button {
   border-color: transparent;
   border-radius: 10px;
   font-size: 40px;
-  padding: 20px;
-  min-width: 70px;
-  min-height: 70px;
+  padding: 10px;
   display: flex;
 }
 
@@ -40,7 +38,7 @@ canvas {
   width: 100%;
   max-width: 1400px;
   margin: 10px auto;
-  padding: 0 20px;
+  padding: 0 10px;
   box-sizing: border-box;
 }
 
@@ -64,12 +62,7 @@ canvas {
   padding: 0 1em;
 }
 
-.movement-controls {
-  display: flex;
-  gap: 10px;
-}
-
-.action-controls {
+.movement-controls, .action-controls {
   display: flex;
   gap: 10px;
 }
