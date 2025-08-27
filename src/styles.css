@@ -54,10 +54,6 @@ canvas {
   justify-content: center;
 }
 
-#options a {
-  display: inline-flex;
-}
-
 #footer {
   font-size: 0.6em;
   margin-top: 30px;
