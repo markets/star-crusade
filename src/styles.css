@@ -12,13 +12,12 @@ a {
 
 button {
   background-color: rgba(255, 255, 255, 0.6);
+  font-family: inherit;
   border-color: transparent;
   border-radius: 10px;
-  font-size: 40px;
-  padding: 20px;
-  min-width: 70px;
-  min-height: 70px;
+  padding: 10px;
   display: flex;
+  align-items: center;
 }
 
 #canvas-container {
@@ -40,31 +39,28 @@ canvas {
   width: 100%;
   max-width: 1400px;
   margin: 10px auto;
-  padding: 0 20px;
+  padding: 0 10px;
   box-sizing: border-box;
+}
+
+#mobile-controls button {
+  font-size: 40px;
 }
 
 #options {
   margin-top: 30px;
   display: flex;
-  gap: 15px;
+  gap: 20px;
   justify-content: center;
-  align-items: center;
-}
-
-.control-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
 }
 
 #footer {
   font-size: 0.6em;
-  margin-top: 40px;
+  margin-top: 30px;
   padding: 0 1em;
 }
 
-.movement-controls {
+.movement-controls, .action-controls {
   display: flex;
   gap: 10px;
 }

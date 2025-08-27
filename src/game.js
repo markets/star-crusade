@@ -221,7 +221,7 @@ class Player {
   }
 
   useBomb() {
-    if (this.bombs <= 0) return false
+    if (Game.gameOver || Game.paused || this.bombs <= 0) return false
     
     this.bombs -= 1
     
@@ -508,6 +508,7 @@ function setupMobileControls() {
   const leftBtn = document.getElementById('left-btn')
   const rightBtn = document.getElementById('right-btn')
   const shootBtn = document.getElementById('shoot-btn')
+  const bombBtn = document.getElementById('bomb-btn')
 
   leftBtn.addEventListener('touchstart', (e) => { preventDefaults(e); Game.player.isMovingLeft = true })
   leftBtn.addEventListener('touchend',   (e) => { preventDefaults(e); Game.player.isMovingLeft = false })
@@ -526,6 +527,9 @@ function setupMobileControls() {
   shootBtn.addEventListener('mousedown',  (e) => { preventDefaults(e); Game.player.isShooting = true })
   shootBtn.addEventListener('mouseup',    (e) => { preventDefaults(e); Game.player.isShooting = false })
   shootBtn.addEventListener('mouseleave', (e) => { Game.player.isShooting = false })
+
+  bombBtn.addEventListener('touchstart', (e) => { preventDefaults(e); Game.player.useBomb() })
+  bombBtn.addEventListener('click', (e) => { preventDefaults(e); Game.player.useBomb() })
 }
 
 function restart() {
@@ -834,11 +838,7 @@ function start() {
     if (event.key === 's') toggleSound()
     if (event.key === 'r') restart()
     if (event.key === 'p') togglePause()
-    if (event.key === 'b') {
-      if (!Game.gameOver && !Game.paused) {
-        Game.player.useBomb()
-      }
-    }
+    if (event.key === 'b') Game.player.useBomb()
 
     play("soundtrack", 0.25)
   })
@@ -869,12 +869,21 @@ function resizeCanvas() {
   const aspectRatio = 1400 / 900
   const isMobile = window.innerWidth <= 768
   const maxW = isMobile ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
-  const maxH = isMobile ? window.innerHeight * 0.75 : Math.min(window.innerHeight * 0.7, 900)
+  const maxH = isMobile ? Math.min(window.innerHeight * 0.75, 500) : Math.min(window.innerHeight * 0.7, 900)
 
-  const widthFromHeight = maxH * aspectRatio
-  const heightFromWidth = maxW / aspectRatio
-  const cssW = Math.floor(widthFromHeight <= maxW ? widthFromHeight : maxW)
-  const cssH = Math.floor(heightFromWidth <= maxH ? heightFromWidth : maxH)
+  let cssW, cssH
+  
+  if (isMobile) {
+    // On mobile, prioritize using available height while keeping reasonable proportions
+    cssH = Math.floor(maxH)
+    cssW = Math.floor(Math.min(maxW, cssH * aspectRatio))
+  } else {
+    // Desktop: maintain strict aspect ratio
+    const widthFromHeight = maxH * aspectRatio
+    const heightFromWidth = maxW / aspectRatio
+    cssW = Math.floor(widthFromHeight <= maxW ? widthFromHeight : maxW)
+    cssH = Math.floor(heightFromWidth <= maxH ? heightFromWidth : maxH)
+  }
 
   // Update CSS size
   const canvas = Game.canvas
