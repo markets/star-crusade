@@ -12,11 +12,12 @@ a {
 
 button {
   background-color: rgba(255, 255, 255, 0.6);
+  font-family: inherit;
   border-color: transparent;
   border-radius: 10px;
-  font-size: 40px;
   padding: 10px;
   display: flex;
+  align-items: center;
 }
 
 #canvas-container {
@@ -42,11 +43,19 @@ canvas {
   box-sizing: border-box;
 }
 
+#mobile-controls button {
+  font-size: 40px;
+}
+
 #options {
   margin-top: 30px;
   display: flex;
   gap: 20px;
   justify-content: center;
+}
+
+#options a {
+  display: inline-flex;
 }
 
 #footer {

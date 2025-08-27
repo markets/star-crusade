@@ -877,11 +877,6 @@ function resizeCanvas() {
     // On mobile, prioritize using available height while keeping reasonable proportions
     cssH = Math.floor(maxH)
     cssW = Math.floor(Math.min(maxW, cssH * aspectRatio))
-    // If width constraint forces height to be much smaller, adjust aspect ratio slightly
-    if (cssW < maxW && cssH < maxH * 0.8) {
-      cssW = Math.floor(maxW)
-      cssH = Math.floor(cssW / aspectRatio)
-    }
   } else {
     // Desktop: maintain strict aspect ratio
     const widthFromHeight = maxH * aspectRatio
