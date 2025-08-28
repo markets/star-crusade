@@ -80,7 +80,7 @@ function clamp(v, a, b) {
   return Math.max(a, Math.min(b, v))
 }
 
-function getResponsiveFont(baseFontSize) {
+function responsiveFont(baseFontSize, font = Game.font) {
   // Base design dimensions (original game size)
   const baseWidth = 1400
   const baseHeight = 900
@@ -94,7 +94,8 @@ function getResponsiveFont(baseFontSize) {
   // Apply minimum scale to keep fonts readable and maximum to prevent oversized fonts
   const clampedScale = clamp(scale, 0.4, 1.2)
   
-  return Math.floor(baseFontSize * clampedScale)
+  const responsiveSize = Math.floor(baseFontSize * clampedScale)
+  return `${responsiveSize}px '${font}'`
 }
 
 function randomInt(min, max) {
@@ -487,7 +488,7 @@ class PowerUp {
     const ctx = Game.ctx
     const icon = PowerUpConfig.types[this.type].icon
     
-    ctx.font = `${getResponsiveFont(25)}px Arial`
+    ctx.font = responsiveFont(25, 'Arial')
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(icon, this.x + this.width / 2, this.y + this.height / 2)
@@ -749,35 +750,35 @@ function render() {
   ctx.textAlign = 'start'
   ctx.fillStyle = 'white'
   ctx.textBaseline = 'alphabetic'
-  ctx.font = `${getResponsiveFont(20)}px '${Game.font}'`
+  ctx.font = responsiveFont(20)
 
   // Score
   const maxScore = parseInt(localStorage.getItem('gameScore')) || 0
   ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 20, 40)
 
   // Lives
-  ctx.font = `${getResponsiveFont(15)}px '${Game.font}'`
+  ctx.font = responsiveFont(15)
   ctx.fillText(`${PowerUpConfig.types.live.icon} ${Game.player.lives}`, 20, 70)
 
   // Show power-up status
   let uiLine = 90
   if (Game.player.shieldTimer > 0) {
-    ctx.font = `${getResponsiveFont(15)}px '${Game.font}'`
+    ctx.font = responsiveFont(15)
     ctx.fillText(`${PowerUpConfig.types.shield.icon} ${Math.ceil(Game.player.shieldTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.doubleShootTimer > 0) {
-    ctx.font = `${getResponsiveFont(15)}px '${Game.font}'`
+    ctx.font = responsiveFont(15)
     ctx.fillText(`${PowerUpConfig.types.double_shoot.icon} ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.tripleShootTimer > 0) {
-    ctx.font = `${getResponsiveFont(15)}px '${Game.font}'`
+    ctx.font = responsiveFont(15)
     ctx.fillText(`${PowerUpConfig.types.triple_shoot.icon} ${Math.ceil(Game.player.tripleShootTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.bombs > 0) {
-    ctx.font = `${getResponsiveFont(15)}px '${Game.font}'`
+    ctx.font = responsiveFont(15)
     ctx.fillText(`${PowerUpConfig.types.bomb.icon} ${Game.player.bombs}`, 20, uiLine)
   }
 
@@ -800,12 +801,12 @@ function render() {
     ctx.fillRect(0, 0, Game.width, Game.height)
 
     ctx.fillStyle = 'white'
-    ctx.font = `${getResponsiveFont(40)}px '${Game.font}'`
+    ctx.font = responsiveFont(40)
     const gameOverText = 'GAME OVER'
     const g1 = ctx.measureText(gameOverText)
     ctx.fillText(gameOverText, (Game.width - g1.width) / 2, Game.height / 2 - 30)
 
-    ctx.font = `${getResponsiveFont(20)}px '${Game.font}'`
+    ctx.font = responsiveFont(20)
     const restartText = 'Press R to restart'
     const g2 = ctx.measureText(restartText)
     ctx.fillText(restartText, (Game.width - g2.width) / 2, Game.height / 2 + 40)
@@ -816,7 +817,7 @@ function render() {
     ctx.fillStyle = 'rgba(0,0,0,0.6)'
     ctx.fillRect(0, 0, Game.width, Game.height)
     ctx.fillStyle = 'white'
-    ctx.font = `${getResponsiveFont(40)}px '${Game.font}'`
+    ctx.font = responsiveFont(40)
     const txt = 'PAUSED'
     const m = ctx.measureText(txt)
     ctx.fillText(txt, (Game.width - m.width) / 2, Game.height / 2)
