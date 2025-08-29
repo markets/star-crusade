@@ -81,21 +81,15 @@ function clamp(v, a, b) {
 }
 
 function responsiveFont(baseFontSize, font = Game.font) {
-  // Base design dimensions (original game size)
-  const baseWidth = 1400
-  const baseHeight = 900
-  
-  // Calculate scale factor based on current canvas size
-  // Use the smaller dimension to ensure readability
-  const widthScale = Game.width / baseWidth
-  const heightScale = Game.height / baseHeight
-  const scale = Math.min(widthScale, heightScale)
-  
-  // Apply minimum scale to keep fonts readable and maximum to prevent oversized fonts
-  const clampedScale = clamp(scale, 0.4, 1.2)
-  
-  const responsiveSize = Math.floor(baseFontSize * clampedScale)
+  let responsiveSize = baseFontSize
+
+  if (isMobile()) responsiveSize = Math.floor(baseFontSize * 0.8)
+
   return `${responsiveSize}px '${font}'`
+}
+
+function isMobile() {
+  return window.innerWidth <= 768
 }
 
 function randomInt(min, max) {
@@ -885,13 +879,12 @@ function start() {
 function resizeCanvas() {
   // Maintain original aspect; scale to window; then fit backing store for HiDPI
   const aspectRatio = 1400 / 900
-  const isMobile = window.innerWidth <= 768
-  const maxW = isMobile ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
-  const maxH = isMobile ? Math.min(window.innerHeight * 0.75, 500) : Math.min(window.innerHeight * 0.7, 900)
+  const maxW = isMobile() ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
+  const maxH = isMobile() ? Math.min(window.innerHeight * 0.75, 500) : Math.min(window.innerHeight * 0.7, 900)
 
   let cssW, cssH
   
-  if (isMobile) {
+  if (isMobile()) {
     // On mobile, prioritize using available height while keeping reasonable proportions
     cssH = Math.floor(maxH)
     cssW = Math.floor(Math.min(maxW, cssH * aspectRatio))
