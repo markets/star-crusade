@@ -80,6 +80,16 @@ function clamp(v, a, b) {
   return Math.max(a, Math.min(b, v))
 }
 
+function responsiveFont(baseFontSize, font = Game.font) {
+  let responsiveSize = baseFontSize
+  if (isMobile()) responsiveSize = Math.floor(baseFontSize * 0.8)
+  return `${responsiveSize}px '${font}'`
+}
+
+function isMobile() {
+  return window.innerWidth <= 768
+}
+
 function randomInt(min, max) {
   const diff = Math.max(0, max - min)
   return Math.floor(Math.random() * diff) + min
@@ -470,7 +480,7 @@ class PowerUp {
     const ctx = Game.ctx
     const icon = PowerUpConfig.types[this.type].icon
     
-    ctx.font = '25px Arial'
+    ctx.font = responsiveFont(25, 'Arial')
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(icon, this.x + this.width / 2, this.y + this.height / 2)
@@ -732,35 +742,35 @@ function render() {
   ctx.textAlign = 'start'
   ctx.fillStyle = 'white'
   ctx.textBaseline = 'alphabetic'
-  ctx.font = `20px '${Game.font}'`
+  ctx.font = responsiveFont(20)
 
   // Score
   const maxScore = parseInt(localStorage.getItem('gameScore')) || 0
   ctx.fillText(`Score ${Game.score} Record ${maxScore}`, 20, 40)
 
   // Lives
-  ctx.font = `15px '${Game.font}'`
+  ctx.font = responsiveFont(15)
   ctx.fillText(`${PowerUpConfig.types.live.icon} ${Game.player.lives}`, 20, 70)
 
   // Show power-up status
   let uiLine = 90
   if (Game.player.shieldTimer > 0) {
-    ctx.font = `15px '${Game.font}'`
+    ctx.font = responsiveFont(15)
     ctx.fillText(`${PowerUpConfig.types.shield.icon} ${Math.ceil(Game.player.shieldTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.doubleShootTimer > 0) {
-    ctx.font = `15px '${Game.font}'`
+    ctx.font = responsiveFont(15)
     ctx.fillText(`${PowerUpConfig.types.double_shoot.icon} ${Math.ceil(Game.player.doubleShootTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.tripleShootTimer > 0) {
-    ctx.font = `15px '${Game.font}'`
+    ctx.font = responsiveFont(15)
     ctx.fillText(`${PowerUpConfig.types.triple_shoot.icon} ${Math.ceil(Game.player.tripleShootTimer)}s`, 20, uiLine)
     uiLine += 20
   }
   if (Game.player.bombs > 0) {
-    ctx.font = `15px '${Game.font}'`
+    ctx.font = responsiveFont(15)
     ctx.fillText(`${PowerUpConfig.types.bomb.icon} ${Game.player.bombs}`, 20, uiLine)
   }
 
@@ -783,12 +793,12 @@ function render() {
     ctx.fillRect(0, 0, Game.width, Game.height)
 
     ctx.fillStyle = 'white'
-    ctx.font = `40px '${Game.font}'`
+    ctx.font = responsiveFont(40)
     const gameOverText = 'GAME OVER'
     const g1 = ctx.measureText(gameOverText)
     ctx.fillText(gameOverText, (Game.width - g1.width) / 2, Game.height / 2 - 30)
 
-    ctx.font = `20px '${Game.font}'`
+    ctx.font = responsiveFont(20)
     const restartText = 'Press R to restart'
     const g2 = ctx.measureText(restartText)
     ctx.fillText(restartText, (Game.width - g2.width) / 2, Game.height / 2 + 40)
@@ -799,7 +809,7 @@ function render() {
     ctx.fillStyle = 'rgba(0,0,0,0.6)'
     ctx.fillRect(0, 0, Game.width, Game.height)
     ctx.fillStyle = 'white'
-    ctx.font = `40px '${Game.font}'`
+    ctx.font = responsiveFont(40)
     const txt = 'PAUSED'
     const m = ctx.measureText(txt)
     ctx.fillText(txt, (Game.width - m.width) / 2, Game.height / 2)
@@ -867,13 +877,12 @@ function start() {
 function resizeCanvas() {
   // Maintain original aspect; scale to window; then fit backing store for HiDPI
   const aspectRatio = 1400 / 900
-  const isMobile = window.innerWidth <= 768
-  const maxW = isMobile ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
-  const maxH = isMobile ? Math.min(window.innerHeight * 0.75, 500) : Math.min(window.innerHeight * 0.7, 900)
+  const maxW = isMobile() ? window.innerWidth * 0.95 : Math.min(window.innerWidth * 0.95, 1400)
+  const maxH = isMobile() ? Math.min(window.innerHeight * 0.75, 500) : Math.min(window.innerHeight * 0.7, 900)
 
   let cssW, cssH
   
-  if (isMobile) {
+  if (isMobile()) {
     // On mobile, prioritize using available height while keeping reasonable proportions
     cssH = Math.floor(maxH)
     cssW = Math.floor(Math.min(maxW, cssH * aspectRatio))
