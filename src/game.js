@@ -82,9 +82,7 @@ function clamp(v, a, b) {
 
 function responsiveFont(baseFontSize, font = Game.font) {
   let responsiveSize = baseFontSize
-
   if (isMobile()) responsiveSize = Math.floor(baseFontSize * 0.8)
-
   return `${responsiveSize}px '${font}'`
 }
 
