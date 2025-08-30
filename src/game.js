@@ -68,7 +68,7 @@ const PowerUpConfig = {
     }
   },
   
-  // Simple frequency arrays
+  // Frequency arrays
   normal: ['shield', 'double_shoot', 'live', 'score'],
   low: ['bomb', 'triple_shoot', 'bonus_score']
 }
@@ -239,11 +239,18 @@ class Player {
     Game.enemies.forEach(enemy => {
       if (enemy.active) {
         enemy.active = false
-        Game.score += 10 // Give points for each enemy killed
+        Game.score += 5 // Give points for each enemy killed
         // Spawn particles for each destroyed enemy
-        spawnHitParticles(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, 15)
+        spawnHitParticles(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, 25)
       }
     })
+    
+    // Add more random particles across the screen for bomb effect
+    for (let i = 0; i < 30; i++) {
+      const x = Math.random() * Game.width
+      const y = Math.random() * Game.height
+      spawnHitParticles(x, y, 8)
+    }
     
     // Remove all enemy bullets
     Game.enemyBullets.forEach(bullet => {
@@ -446,7 +453,7 @@ class PowerUp {
     this.speed = 120 // px/s, slower than enemies
     this.active = true
     
-    // Simple frequency selection: 60% normal, 40% low
+    // Frequency selection: 60% normal, 40% low
     const useNormalFrequency = Math.random() < 0.6
     
     if (useNormalFrequency) {
@@ -752,7 +759,7 @@ function render() {
   ctx.font = responsiveFont(15)
   ctx.fillText(`${PowerUpConfig.types.live.icon} ${Game.player.lives}`, 20, 70)
 
-  // Show power-up status
+  // Show power-ups status
   let uiLine = 90
   if (Game.player.shieldTimer > 0) {
     ctx.font = responsiveFont(15)
