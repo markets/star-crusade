@@ -239,11 +239,18 @@ class Player {
     Game.enemies.forEach(enemy => {
       if (enemy.active) {
         enemy.active = false
-        Game.score += 10 // Give points for each enemy killed
+        Game.score += 5 // Give points for each enemy killed
         // Spawn particles for each destroyed enemy
-        spawnHitParticles(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, 15)
+        spawnHitParticles(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, 25)
       }
     })
+    
+    // Add more random particles across the screen for bomb effect
+    for (let i = 0; i < 30; i++) {
+      const x = Math.random() * Game.width
+      const y = Math.random() * Game.height
+      spawnHitParticles(x, y, 8)
+    }
     
     // Remove all enemy bullets
     Game.enemyBullets.forEach(bullet => {
