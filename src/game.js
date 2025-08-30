@@ -68,7 +68,7 @@ const PowerUpConfig = {
     }
   },
   
-  // Simple frequency arrays
+  // Frequency arrays
   normal: ['shield', 'double_shoot', 'live', 'score'],
   low: ['bomb', 'triple_shoot', 'bonus_score']
 }
@@ -453,7 +453,7 @@ class PowerUp {
     this.speed = 120 // px/s, slower than enemies
     this.active = true
     
-    // Simple frequency selection: 60% normal, 40% low
+    // Frequency selection: 60% normal, 40% low
     const useNormalFrequency = Math.random() < 0.6
     
     if (useNormalFrequency) {
@@ -759,7 +759,7 @@ function render() {
   ctx.font = responsiveFont(15)
   ctx.fillText(`${PowerUpConfig.types.live.icon} ${Game.player.lives}`, 20, 70)
 
-  // Show power-up status
+  // Show power-ups status
   let uiLine = 90
   if (Game.player.shieldTimer > 0) {
     ctx.font = responsiveFont(15)
